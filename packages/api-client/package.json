@@ -17,11 +17,14 @@
     "prepublish": "yarn build"
   },
   "dependencies": {
+    "@shopify/shopify-app-remix": "^1.1.0",
     "@vue-storefront/middleware": "3.0.0-rc.2",
+    "@vue-storefront/rollup-config": "^0.0.5",
     "axios": "^0.21.1",
     "consola": "^3.0.0"
   },
   "devDependencies": {
+    "@rollup/plugin-json": "^6.0.0",
     "jsdom": "^17.0.0"
   },
   "files": [
