@@ -1,30 +1,17 @@
-import "@shopify/shopify-app-remix/adapters/node";
-import {
-  AppDistribution,
-  DeliveryMethod,
-  shopifyApp,
-  LATEST_API_VERSION,
-  // @ts-ignore
-} from "@shopify/shopify-app-remix/server";
-import { restResources } from "@shopify/shopify-api/rest/admin/2023-07";
+import { shopifyApi, LATEST_API_VERSION } from '@shopify/shopify-api';
 
 import { apiClientFactory } from '@vue-storefront/middleware';
 import { MiddlewareConfig } from './index';
 import * as apiEndpoints from './api';
 
-/**
- * In here you should create the client you'll use to communicate with the backend.
- * Axios is just an example.
- */
 const buildClient = (settings: MiddlewareConfig) => {
-  const shopify = shopifyApp({
+  const shopify = shopifyApi({
     apiKey: settings.app.apiKey,
     apiSecretKey: settings.app.apiSecretKey,
     scopes: settings.app.scopes,
     hostName: settings.app.hostName,
     apiVersion: LATEST_API_VERSION,
     isEmbeddedApp: false,
-    appUrl: 'vsf-plugin-alfa.myshopify.com',
     ...settings.app,
     // appUrl: settings.SHOPIFY_APP_URL || "",
     // authPathPrefix: "/auth",

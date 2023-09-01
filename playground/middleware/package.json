@@ -9,8 +9,9 @@
     "dev": "nodemon --watch node middleware.js"
   },
   "dependencies": {
-    "@vue-storefront/middleware": "3.0.1",
+    "@shopify/shopify-api": "^7.6.0",
     "@vue-storefront/integration-boilerplate-api": "*",
+    "@vue-storefront/middleware": "3.0.1",
     "cors": "^2.8.5"
   },
   "files": [

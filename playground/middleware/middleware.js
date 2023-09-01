@@ -1,3 +1,4 @@
+require('@shopify/shopify-api/adapters/node');
 const { createServer } = require("@vue-storefront/middleware");
 const { integrations } = require("./middleware.config");
 const cors = require("cors");
