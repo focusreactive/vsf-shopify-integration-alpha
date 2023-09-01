@@ -8,8 +8,11 @@ module.exports = {
           apiSecretKey: '14af09a82e4d92653594884088be7357',
           scopes: ['read_products'],
           hostName: '0.0.0.0:8181',
-
-        }
+        },
+        storeFrontClient: {
+          domain: 'vsf-plugin-alfa.myshopify.com',
+          storefrontAccessToken: '65809bb82349c99f77c4cefbb00f5537',
+        },
       },
     },
   },

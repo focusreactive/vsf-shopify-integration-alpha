@@ -1,4 +1,9 @@
-import { shopifyApi, LATEST_API_VERSION } from '@shopify/shopify-api';
+import {
+  shopifyApi,
+  LATEST_API_VERSION,
+  Shopify,
+  ShopifyRestResources,
+} from '@shopify/shopify-api';
 
 import { apiClientFactory } from '@vue-storefront/middleware';
 import { MiddlewareConfig } from './index';
@@ -13,36 +18,27 @@ const buildClient = (settings: MiddlewareConfig) => {
     apiVersion: LATEST_API_VERSION,
     isEmbeddedApp: false,
     ...settings.app,
-    // appUrl: settings.SHOPIFY_APP_URL || "",
-    // authPathPrefix: "/auth",
-    // sessionStorage: new PrismaSessionStorage(prisma),
-    // distribution: AppDistribution.AppStore,
-    // restResources,
-    // webhooks: {
-    //   APP_UNINSTALLED: {
-    //     deliveryMethod: DeliveryMethod.Http,
-    //     callbackUrl: "/webhooks",
-    //   },
-    // },
-    // hooks: {
-    //   afterAuth: async ({ session }) => {
-    //     shopify.registerWebhooks({ session });
-    //   },
-    // },
-    // ...(process.env.SHOP_CUSTOM_DOMAIN
-    //   ? { customShopDomains: [process.env.SHOP_CUSTOM_DOMAIN] }
-    //   : {}),
   });
 
-  return shopify;
+  const storefrontClient = new shopify.clients.Storefront({
+    domain: settings.storeFrontClient.domain,
+    storefrontAccessToken: settings.storeFrontClient.storefrontAccessToken,
+    apiVersion: LATEST_API_VERSION,
+  });
+
+  return { storefrontClient };
 };
 
+// const getSession =  (shopify: Shopify<ShopifyRestResources>) => async (req, res) => {
+//   shopify.auth()
+// };
+
 const onCreate = (settings: MiddlewareConfig) => {
-  const client = buildClient(settings);
+  const { storefrontClient } = buildClient(settings);
 
   return {
     config: settings,
-    client,
+    client: { storefrontClient },
   };
 };
 

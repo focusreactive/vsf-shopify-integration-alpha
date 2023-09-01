@@ -1,8 +1,9 @@
-import { ConfigParams, ShopifyRestResources } from "@shopify/shopify-api";
+import { ConfigParams, ShopifyRestResources, StorefrontClientParams } from "@shopify/shopify-api";
 
 /**
  * Settings to be provided in the `middleware.config.js` file.
  */
 export interface MiddlewareConfig {
-  app: ConfigParams<ShopifyRestResources>
+  app: ConfigParams<ShopifyRestResources>,
+  storeFrontClient: StorefrontClientParams
 }

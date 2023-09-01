@@ -1,13 +1,14 @@
 import { IntegrationContext } from '@vue-storefront/middleware';
-import { AxiosInstance } from 'axios';
 import { MiddlewareConfig, ContextualizedEndpoints } from '../index';
+import { Shopify, ShopifyRestResources } from '@shopify/shopify-api';
+import { StorefrontClient } from '@shopify/shopify-api/lib/clients/graphql/storefront_client';
 
-/**
- * Runtime integration context, which includes API client instance, settings, and endpoints that will be passed via middleware server.
- * This interface name is starting with `Boilerplate`, but you should use your integration name in here.
- **/
-export type BoilerplateIntegrationContext = IntegrationContext<
-  AxiosInstance,
+type ShopifyClientInstance = {
+  storefrontClient: StorefrontClient;
+};
+
+export type ShopifyIntegrationContext = IntegrationContext<
+  ShopifyClientInstance,
   MiddlewareConfig,
   ContextualizedEndpoints
 >;
@@ -16,6 +17,5 @@ export type BoilerplateIntegrationContext = IntegrationContext<
  * Global context of the application which includes runtime integration context.
  **/
 export interface Context {
-  // This property is named `boilerplate`, but you should use your integration name in here.
-  $boilerplate: BoilerplateIntegrationContext;
+  $shopify: ShopifyIntegrationContext;
 }
