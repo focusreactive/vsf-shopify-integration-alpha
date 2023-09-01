@@ -16,6 +16,7 @@ export interface Endpoints {
   ): Promise<TODO>;
   getProduct(context: ShopifyIntegrationContext, params: TODO): Promise<TODO>;
   customQuery(context: ShopifyIntegrationContext, params: CustomQueryParams): Promise<CustomQueryResults>;
+    getProducts(context: ShopifyIntegrationContext, params: TODO): Promise<TODO>;
 }
 
 export type CustomQueryParams = {
@@ -23,5 +24,5 @@ export type CustomQueryParams = {
 };
 
 export type CustomQueryResults = {
-  data: string;
+  data: Object;
 };

@@ -1,15 +1,24 @@
-import { LATEST_API_VERSION } from '@shopify/shopify-api';
-
 import { Endpoints } from '../../types';
 
-export const customQuery: Endpoints['customQuery'] = async (
+export const getProducts: Endpoints['getProducts'] = async (
   context,
   params
 ) => {
   const { storefrontClient } = context.client;
 
   const response = await storefrontClient.query<{ data: { products: {}[] } }>({
-    data: params.query,
+    data: `#graphql
+   {
+      products (first: 10) {
+        edges {
+          node {
+            id
+            title
+            descriptionHtml
+          }
+        }
+      }
+    }`,
   });
   const data = response?.body?.data;
 
