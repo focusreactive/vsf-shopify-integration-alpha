@@ -1,6 +1,6 @@
 module.exports = {
   title: 'Integration Boilerplate',
-  base: '/integration-boilerplate/',
+  base: '/shopify-integration/',
   description: 'Documentation for the new Integration boilerplate',
   head: [['link', { rel: 'icon', href: '/favicon.png' }]],
   theme: 'vsf-docs',

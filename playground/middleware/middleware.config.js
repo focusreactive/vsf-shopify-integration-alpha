@@ -1,7 +1,7 @@
 module.exports = {
   integrations: {
-    boilerplate: {
-      location: '@vue-storefront/integration-boilerplate-api/server',
+    shopify: {
+      location: '@vue-storefront/shopify-api/server',
       configuration: {
         app: {
           apiKey: 'd17c427186312f23db090ae337ddb34a',

@@ -1,5 +1,5 @@
 {
-  "name": "@vue-storefront/integration-boilerplate-playground",
+  "name": "@vue-storefront/shopify-integration-playground",
   "private": true,
   "version": "0.1.0",
   "engines": {
@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@shopify/shopify-api": "^7.6.0",
-    "@vue-storefront/integration-boilerplate-api": "*",
+    "@vue-storefront/shopify-api": "*",
     "@vue-storefront/middleware": "3.0.1",
     "cors": "^2.8.5"
   },

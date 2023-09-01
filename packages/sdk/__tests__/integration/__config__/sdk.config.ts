@@ -1,9 +1,9 @@
 import { initSDK, buildModule } from '@vue-storefront/sdk';
-import { boilerplateModule, BoilerplateModuleType } from '../../../src';
+import { shopifyModule, ShopifyModuleType } from '../../../src';
 
 const sdkConfig = {
-  boilerplate: buildModule<BoilerplateModuleType>(boilerplateModule, {
-    apiUrl: 'http://localhost:8181/boilerplate',
+  shopify: buildModule<ShopifyModuleType>(shopifyModule, {
+    apiUrl: 'http://localhost:8181/shopify',
   }),
 };
 

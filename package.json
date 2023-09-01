@@ -1,5 +1,5 @@
 {
-  "name": "@vue-storefront/integration-boilerplate",
+  "name": "@vue-storefront/shopify-integration",
   "private": true,
   "license": "MIT",
   "scripts": {

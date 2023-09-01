@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@vue-storefront/middleware": "3.0.0-rc.2",
-    "@vue-storefront/integration-boilerplate-api": "*",
+    "@vue-storefront/shopify-api": "*",
     "cors": "^2.8.5"
   },
   "files": [

@@ -10,7 +10,7 @@ type Methods = typeof methods;
 /**
  * Initialize the Boilerplate connector.
  */
-export const boilerplateConnector = (options: Options): Methods => {
+export const shopifyConnector = (options: Options): Methods => {
   client.defaults.baseURL = options.apiUrl;
 
   return methods;

@@ -2,8 +2,8 @@ import { createServer } from '@vue-storefront/middleware';
 
 const middlewareConfig = {
   integrations: {
-    boilerplate: {
-      location: '@vue-storefront/integration-boilerplate-api/server',
+    shopify: {
+      location: '@vue-storefront/shopify-api/server',
       configuration: {},
     },
   }
