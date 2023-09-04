@@ -1,11 +1,9 @@
-type TODO = {
-  product: any,
-  variant: any
-}
+import { FragmentsStore } from './fragments';
+
 export interface Options {
   /**
    * The API URL of the client-side environment.
    */
   apiUrl: string;
-  fragments: TODO
+  fragments: FragmentsStore;
 }
