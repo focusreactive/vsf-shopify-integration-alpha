@@ -5,6 +5,7 @@ export const getProducts: Endpoints['getProducts'] = async (
   params
 ) => {
   const { storefrontClient } = context.client;
+  const { productFragment } = params;
 
   const response = await storefrontClient.query<{ data: { products: {}[] } }>({
     data: `#graphql
@@ -12,13 +13,15 @@ export const getProducts: Endpoints['getProducts'] = async (
       products (first: 10) {
         edges {
           node {
-            id
-            title
-            descriptionHtml
+            ...product
           }
         }
       }
-    }`,
+    }
+
+    fragment product on Product ${productFragment}
+
+    `,
   });
   const data = response?.body?.data;
 
