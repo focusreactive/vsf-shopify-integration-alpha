@@ -7,3 +7,5 @@ export interface MiddlewareConfig {
   app: ConfigParams<ShopifyRestResources>,
   storeFrontClient: StorefrontClientParams
 }
+
+export type FragmentInstance = string;

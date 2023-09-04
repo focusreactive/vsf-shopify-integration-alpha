@@ -1,4 +1,9 @@
-import { Endpoints } from '../../types';
+import { Endpoints, ShopifyIntegrationContext } from '../../types';
+
+type GetProducts = (
+  context: ShopifyIntegrationContext,
+  params: any
+) => Promise<any>;
 
 export const getProducts: Endpoints['getProducts'] = async (
   context,

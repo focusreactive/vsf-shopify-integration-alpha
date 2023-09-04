@@ -1,29 +1,35 @@
-import { Endpoints } from '../../types';
+import { FragmentInstance, ShopifyIntegrationContext } from '../../types';
 
-export const getProduct: Endpoints['getProduct'] = async (context, params) => {
+export type GetProduct = (
+  context: ShopifyIntegrationContext,
+  params: {
+    productFragment: FragmentInstance;
+    id: string;
+  }
+) => Promise<{ product: Object }>;
+
+export const getProduct: GetProduct = async (context, params) => {
   const { storefrontClient } = context.client;
   const { productFragment } = params;
 
-  const response = await storefrontClient.query<{ data: { products: {}[] } }>({
+  const response = await storefrontClient.query<{ data: { product: Object } }>({
+    // TODO: switch to handle instead of id
     data: {
       query: `#graphql
-    query Product($ID: ID!) {
-        product(id: $ID) {
-          ...product
+        query Product($id: ID!) {
+          product(id: $id) {
+            ...product
+          }
         }
-      }
 
-      fragment product on Product {
-        id
-        title
-      }
+        fragment product on Product ${productFragment}
     `,
       variables: {
-        ID: params.ID,
+        id: params.id,
       },
     },
   });
   const data = response?.body?.data;
 
-  return { data };
+  return data;
 };

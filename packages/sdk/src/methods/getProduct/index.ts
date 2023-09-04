@@ -1,6 +1,13 @@
 import { client } from '../../client';
 import { getFragment } from '../../fragments';
-import { FragmentName, TODO } from '../../types';
+import { FragmentInstance, FragmentName, TODO } from '../../types';
+
+type Props = {
+  productFragment?: FragmentInstance;
+  id: string;
+};
+
+type Returns = { product: Object };
 
 /**
  * Method summary - General information about the SDK method, usually a single sentence.
@@ -21,10 +28,11 @@ import { FragmentName, TODO } from '../../types';
  * @example
  * A short code snippet showing how to use the method. Usually we have more than one @example. We should strive for adding as many examples as possible here, with multiple param configurations.
  */
-export async function getProduct(props: TODO) {
-  const productFragment = getFragment(FragmentName.product);
-  const { data } = await client.post<TODO>('getProduct', {
-    ...props,
+export async function getProduct(props: Props): Promise<Returns> {
+  const productFragment =
+    props.productFragment || getFragment(FragmentName.product);
+  const { data } = await client.post('getProduct', {
+    id: props.id,
     productFragment,
   });
   return data;
