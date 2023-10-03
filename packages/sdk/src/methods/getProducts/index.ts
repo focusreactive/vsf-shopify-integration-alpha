@@ -21,7 +21,7 @@ import { FragmentName, TODO } from '../../types';
  * @example
  * A short code snippet showing how to use the method. Usually we have more than one @example. We should strive for adding as many examples as possible here, with multiple param configurations.
  */
-export async function getProducts(props: TODO) {
+export async function getProducts(props?: TODO) {
   const productFragment = getFragment(FragmentName.product);
   const { data } = await client.post<TODO>('getProducts', {
     ...props,

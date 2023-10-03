@@ -41,7 +41,8 @@
   },
   "workspaces": [
     "packages/*",
-    "playground/*"
+    "playground/*",
+    "storefront/*"
   ],
   "dependencies": {
     "react": "18.2.0",

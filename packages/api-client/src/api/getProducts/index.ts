@@ -5,6 +5,31 @@ type GetProducts = (
   params: any
 ) => Promise<any>;
 
+const variant = `#graphql
+{
+  id
+  title
+}
+`;
+
+const product = `#graphql
+{
+  id
+  title
+  description
+  availableForSale
+  variants(first: 10) {
+    edges {
+      node {
+        ...variant
+      }
+    }
+  }
+}
+
+fragment variant on ProductVariant ${variant}
+`;
+
 export const getProducts: Endpoints['getProducts'] = async (
   context,
   params
@@ -24,7 +49,7 @@ export const getProducts: Endpoints['getProducts'] = async (
       }
     }
 
-    fragment product on Product ${productFragment}
+    fragment product on Product ${productFragment || product}
 
     `,
   });

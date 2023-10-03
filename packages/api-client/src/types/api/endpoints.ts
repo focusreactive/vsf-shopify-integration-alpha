@@ -19,7 +19,7 @@ export interface Endpoints {
     context: ShopifyIntegrationContext,
     params: CustomQueryParams
   ): Promise<CustomQueryResults>;
-  getProducts(context: ShopifyIntegrationContext, params: TODO): Promise<TODO>;
+  getProducts(context: ShopifyIntegrationContext, params?: TODO): Promise<TODO>;
 }
 
 export type CustomQueryParams = {
