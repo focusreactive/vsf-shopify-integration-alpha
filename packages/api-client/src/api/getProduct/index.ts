@@ -4,7 +4,7 @@ export type GetProduct = (
   context: ShopifyIntegrationContext,
   params: {
     productFragment: FragmentInstance;
-    id: string;
+    handle: string;
   }
 ) => Promise<{ product: Object }>;
 
@@ -16,8 +16,8 @@ export const getProduct: GetProduct = async (context, params) => {
     // TODO: switch to handle instead of id
     data: {
       query: `#graphql
-        query Product($id: ID!) {
-          product(id: $id) {
+        query Product($handle: String!) {
+          product(handle: $handle) {
             ...product
           }
         }
@@ -25,7 +25,7 @@ export const getProduct: GetProduct = async (context, params) => {
         fragment product on Product ${productFragment}
     `,
       variables: {
-        id: params.id,
+        handle: params.handle,
       },
     },
   });

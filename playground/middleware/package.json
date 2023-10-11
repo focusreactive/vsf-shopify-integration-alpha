@@ -6,6 +6,7 @@
     "node": ">=16.x"
   },
   "scripts": {
+    "start": "node middleware.js",
     "dev": "NODE_OPTIONS='--inspect' node middleware.js",
     "dev:watch": "NODE_OPTIONS='--inspect' nodemon --watch node middleware.js"
   },

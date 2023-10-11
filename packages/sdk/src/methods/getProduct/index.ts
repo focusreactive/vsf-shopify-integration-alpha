@@ -4,10 +4,22 @@ import { FragmentInstance, FragmentName, TODO } from '../../types';
 
 type Props = {
   productFragment?: FragmentInstance;
-  id: string;
+  handle: string;
 };
 
 type Returns = { product: Object };
+
+type QueriedVariants<T> = {
+  edges: Array<{ node: T }>;
+};
+type ProcessVariants<T> = (queriedVariants: QueriedVariants<T>) => Array<T>;
+const processVariants: ProcessVariants<Object> = (queriedVariants) => {
+  try {
+    return queriedVariants?.edges.map(({ node }) => node);
+  } catch {
+    return [];
+  }
+};
 
 /**
  * Method summary - General information about the SDK method, usually a single sentence.
@@ -32,8 +44,13 @@ export async function getProduct(props: Props): Promise<Returns> {
   const productFragment =
     props.productFragment || getFragment(FragmentName.product);
   const { data } = await client.post('getProduct', {
-    id: props.id,
+    handle: props.handle,
     productFragment,
   });
-  return data;
+  const product = {
+    ...data.product,
+    variants: processVariants(data.product.variants),
+  }
+  data.variants = processVariants(data.variants);
+  return product;
 }
