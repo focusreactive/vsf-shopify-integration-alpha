@@ -24,6 +24,40 @@ const processArrays: ProcessArrays<Object> = (queriedArray) => {
   }
 };
 
+type AttributeName = string;
+type Options = Array<{
+  id: string;
+  name: AttributeName;
+  values: string[];
+}>;
+
+type Attributes = {
+  [key: AttributeName]: Array<{
+    label: string;
+    name: AttributeName;
+    value: string;
+  }>;
+};
+
+type GetAttributes = (options: Options) => Attributes;
+const getAttributes: GetAttributes = (options: Options) => {
+  try {
+    return options.reduce(
+      (attr, opt) => ({
+        ...attr,
+        [opt.name]: opt.values.map((val) => ({
+          label: val,
+          name: opt.name,
+          value: val,
+        })),
+      }),
+      {}
+    );
+  } catch (error) {
+    return {};
+  }
+};
+
 /**
  * Method summary - General information about the SDK method, usually a single sentence.
  *
@@ -54,7 +88,7 @@ export async function getProduct(props: Props): Promise<Returns> {
     ...data.product,
     variants: processArrays(data.product.variants),
     gallery: processArrays(data.product.gallery),
-    attributes: [],
+    attributes: getAttributes(data.product.options),
     price: {
       value: {
         amount: 6868,
