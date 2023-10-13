@@ -9,15 +9,18 @@ type Props = {
 
 type Returns = { product: Object };
 
-type QueriedVariants<T> = {
+type QueriedArray<T> = {
   edges: Array<{ node: T }>;
 };
-type ProcessVariants<T> = (queriedVariants: QueriedVariants<T>) => Array<T>;
-const processVariants: ProcessVariants<Object> = (queriedVariants) => {
+type ProcessArrays<T> = (
+  queriedVariants: QueriedArray<T>
+) => Array<T> | QueriedArray<T>;
+
+const processArrays: ProcessArrays<Object> = (queriedArray) => {
   try {
-    return queriedVariants?.edges.map(({ node }) => node);
+    return queriedArray?.edges.map(({ node }) => node);
   } catch {
-    return [];
+    return queriedArray;
   }
 };
 
@@ -49,8 +52,21 @@ export async function getProduct(props: Props): Promise<Returns> {
   });
   const product = {
     ...data.product,
-    variants: processVariants(data.product.variants),
-  }
-  data.variants = processVariants(data.variants);
+    variants: processArrays(data.product.variants),
+    gallery: processArrays(data.product.gallery),
+    attributes: [],
+    price: {
+      value: {
+        amount: 6868,
+      },
+      regularPrice: {
+        amount: 6868,
+      },
+    },
+    rating: {
+      average: 4,
+      count: 12,
+    },
+  };
   return product;
 }
