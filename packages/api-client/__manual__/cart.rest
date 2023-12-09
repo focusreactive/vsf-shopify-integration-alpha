@@ -1,0 +1,80 @@
+# Manually create a cart
+
+# @name initCart
+POST http://localhost:8181/shopify/initCart
+Content-Type: application/json
+
+{
+  "lines": [
+    {
+      "merchandiseId": "gid://shopify/ProductVariant/46616259133720",
+      "quantity": 1
+    }
+  ]
+}
+
+###
+
+@cartId = {{initCart.response.body.$.data.id}}
+
+# Get cart id and get the cart
+# @name getCart
+POST http://localhost:8181/shopify/getCart
+Content-Type: application/json
+
+{
+  "cartId": "{{cartId}}"
+}
+
+###
+
+@lineId1 = {{getCart.response.body.$.data.lines.edges[0].node.id}}
+
+# Update cart - Add new line item
+# @name updateCart
+POST http://localhost:8181/shopify/updateCart
+Content-Type: application/json
+
+{
+  "cartId": "{{cartId}}",
+  "addLines": [
+    {
+      "merchandiseId": "gid://shopify/ProductVariant/46616258740504",
+      "quantity": 2
+    }
+  ]
+}
+
+###
+
+@lineId2 = {{updateCart.response.body.$.data.lines.edges[1].node.id}}
+
+# Update cart - Remove line item
+
+POST http://localhost:8181/shopify/updateCart
+Content-Type: application/json
+
+{
+  "cartId": "{{cartId}}",
+  "removeLineIds": ["{{lineId1}}"]
+}
+
+###
+
+
+
+# Update cart - Update line item quantity
+POST http://localhost:8181/shopify/updateCart
+Content-Type: application/json
+
+{
+  "cartId": "{{cartId}}",
+  "updateLines": [
+    {
+      "id": "{{lineId2}}",
+      "quantity": 3
+    }
+  ]
+}
+
+###

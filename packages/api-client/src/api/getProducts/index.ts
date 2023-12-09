@@ -1,6 +1,6 @@
 import { Endpoints, ShopifyIntegrationContext } from '../../types';
 
-type GetProducts = (
+export type GetProducts = (
   context: ShopifyIntegrationContext,
   params: any
 ) => Promise<any>;
@@ -30,7 +30,7 @@ const product = `#graphql
 fragment variant on ProductVariant ${variant}
 `;
 
-export const getProducts: Endpoints['getProducts'] = async (
+export const getProducts: GetProducts = async (
   context,
   params
 ) => {
