@@ -1,46 +1,36 @@
-import { CREATE_CART_MUTATION, GET_CART_QUERY } from '../../lib/queries';
-import { CartDetails, CartResponseType } from '../../lib/types';
-import { ShopifyIntegrationContext } from '../../types';
+import { CART_DETAILS_FRAGMENT, CREATE_CART_MUTATION } from '../../model/queries';
+import { CartDetails, CartResponseType } from '../../model/types';
+import { FragmentInstance, ShopifyIntegrationContext } from '../../types';
 
+export type InitCartProps = {
+  lines: Array<{ merchandiseId: string; quantity: number }>;
+  productFragment: FragmentInstance;
+};
 
-
-
-// Define the function type for initCart
-export type InitCartFunction = (
+export const initCart = async (
   context: ShopifyIntegrationContext,
-  params: {
-    cartId?: string;
-    lines?: Array<{ merchandiseId: string; quantity: number }>;
-  }
-) => Promise<CartResponseType>;
-
-// Implement the initCart function
-export const initCart: InitCartFunction = async (context, params) => {
+  params: InitCartProps
+): Promise<CartResponseType> => {
   const { storefrontClient } = context.client;
 
-  if (params.cartId) {
-    // Fetching an existing cart
-    const response = await storefrontClient.query<{
-      data: { cart: CartDetails };
-    }>({
-      data: {
-        query: GET_CART_QUERY,
-        variables: { cartId: params.cartId },
-      },
-    });
-    return { data: response?.body?.data?.cart };
-  } else if (params.lines) {
-    // Creating a new cart
-    const response = await storefrontClient.query<{
-      data: { cartCreate: { cart: CartDetails } };
-    }>({
-      data: {
-        query: CREATE_CART_MUTATION,
-        variables: { lines: params.lines },
-      },
-    });
-    return { data: response?.body?.data?.cartCreate.cart };
+  if (!params.lines || params.lines.length === 0) {
+    throw new Error('Lines are required to initialize a new cart');
+  }
+  if (!params.productFragment) {
+    throw new Error('Product fragment is required to shape the product data');
   }
 
-  throw new Error('Insufficient parameters provided for cart initialization');
+  const cartFragment = CART_DETAILS_FRAGMENT(params.productFragment);
+
+  const response = await storefrontClient.query<{
+    data: { cartCreate: { cart: CartDetails } };
+  }>({
+    data: {
+      query: `${CREATE_CART_MUTATION}
+      ${cartFragment}`,
+      variables: { lines: params.lines },
+    },
+  });
+
+  return { data: response?.body?.data?.cartCreate.cart };
 };

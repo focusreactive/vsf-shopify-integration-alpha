@@ -1,4 +1,4 @@
-# Manually create a cart
+# Manually create a cart with initCart
 
 # @name initCart
 POST http://localhost:8181/shopify/initCart
@@ -10,7 +10,8 @@ Content-Type: application/json
       "merchandiseId": "gid://shopify/ProductVariant/46616259133720",
       "quantity": 1
     }
-  ]
+  ],
+  "productFragment": "title"
 }
 
 ###
@@ -23,7 +24,8 @@ POST http://localhost:8181/shopify/getCart
 Content-Type: application/json
 
 {
-  "cartId": "{{cartId}}"
+  "cartId": "{{cartId}}",
+  "productFragment": "title"
 }
 
 ###
@@ -31,7 +33,7 @@ Content-Type: application/json
 @lineId1 = {{getCart.response.body.$.data.lines.edges[0].node.id}}
 
 # Update cart - Add new line item
-# @name updateCart
+# @name updateCartAddLine
 POST http://localhost:8181/shopify/updateCart
 Content-Type: application/json
 
@@ -42,28 +44,29 @@ Content-Type: application/json
       "merchandiseId": "gid://shopify/ProductVariant/46616258740504",
       "quantity": 2
     }
-  ]
+  ],
+  "productFragment": "title"
 }
 
 ###
 
-@lineId2 = {{updateCart.response.body.$.data.lines.edges[1].node.id}}
+@lineId2 = {{updateCartAddLine.response.body.$.data.lines.edges[1].node.id}}
 
 # Update cart - Remove line item
-
+# @name updateCartRemoveLine
 POST http://localhost:8181/shopify/updateCart
 Content-Type: application/json
 
 {
   "cartId": "{{cartId}}",
-  "removeLineIds": ["{{lineId1}}"]
+  "removeLineIds": ["{{lineId2}}"],
+  "productFragment": "title"
 }
 
 ###
 
-
-
 # Update cart - Update line item quantity
+# @name updateCartUpdateLine
 POST http://localhost:8181/shopify/updateCart
 Content-Type: application/json
 
@@ -71,10 +74,11 @@ Content-Type: application/json
   "cartId": "{{cartId}}",
   "updateLines": [
     {
-      "id": "{{lineId2}}",
+      "id": "{{lineId1}}",
       "quantity": 3
     }
-  ]
+  ],
+  "productFragment": "title"
 }
 
 ###

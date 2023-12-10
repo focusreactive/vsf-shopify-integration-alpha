@@ -1,29 +1,43 @@
-import { GET_CART_QUERY } from '../../lib/queries';
-import { CartDetails, CartResponseType } from '../../lib/types';
-import { ShopifyIntegrationContext} from '../../types';
+import { GET_CART_QUERY, CART_DETAILS_FRAGMENT } from '../../model/queries';
+import { CartDetails, CartResponseType } from '../../model/types';
+import { ShopifyIntegrationContext, FragmentInstance } from '../../types';
 
 // Define the function type for getCart
-export type GetCartFunction = (
-  context: ShopifyIntegrationContext,
-  params: { cartId: string }
-) => Promise<CartResponseType>;
+export type GetCartProps = {
+  cartId: string;
+  productFragment: FragmentInstance;
+};
 
-// Implement the getCart function
-export const getCart: GetCartFunction = async (context, params) => {
+export const getCart = async (
+  context: ShopifyIntegrationContext,
+  params: GetCartProps
+): Promise<CartResponseType> => {
   const { storefrontClient } = context.client;
 
   if (!params.cartId) {
     throw new Error('Cart ID is required to retrieve a cart');
   }
+  if (!params.productFragment) {
+    throw new Error('Product fragment is required to shape the product data');
+  }
 
-  const response = await storefrontClient.query<{
-    data: { cart: CartDetails };
-  }>({
-    data: {
-      query: GET_CART_QUERY,
-      variables: { cartId: params.cartId },
-    },
-  });
+  const cartFragment = CART_DETAILS_FRAGMENT(params.productFragment);
 
-  return { data: response?.body?.data?.cart };
+  try {
+    const response = await storefrontClient.query<{
+      data: { cart: CartDetails };
+    }>({
+      data: {
+        query: `${GET_CART_QUERY}
+                ${cartFragment}`,
+        variables: { cartId: params.cartId },
+      },
+    });
+
+    return { data: response?.body?.data?.cart };
+
+  } catch (error) {
+    console.error('Error retrieving cart:', error);
+    throw new Error('Failed to retrieve cart. Please try again later.');
+  }
 };
