@@ -4,6 +4,7 @@ export type CartDetails = {
   lines: {
     edges: Array<{
       node: {
+        id: string;
         merchandise: {
           product: {
             title: string;
@@ -13,4 +14,14 @@ export type CartDetails = {
       };
     }>;
   };
+};
+
+export type FlatCartLine = {
+  id: string;
+  merchandise: {
+    product: {
+      title: string;
+    };
+  };
+  quantity: number;
 };

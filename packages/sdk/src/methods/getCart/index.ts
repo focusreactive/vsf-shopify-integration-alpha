@@ -1,11 +1,18 @@
 import { client } from '../../client';
-import { CartDetails } from '../../types/cart';
+import { getFragment } from '../../fragments';
+import { CartDetails, FlatCartLine } from '../../types/cart';
+import { FragmentInstance, FragmentName } from '../../types';
 
 type GetCartProps = {
   cartId: string;
+  productFragment?: FragmentInstance;
 };
 
-type GetCartReturns = CartDetails;
+type GetCartReturns = {
+  id: CartDetails['id'];
+  checkoutUrl: CartDetails['checkoutUrl'];
+  lines: Array<FlatCartLine>;
+};
 
 /**
  * Retrieves an existing shopping cart based on the provided cart ID.
@@ -13,9 +20,9 @@ type GetCartReturns = CartDetails;
  * @remarks
  * This method calls the 'getCart' endpoint from the API middleware.
  * It is typically used to fetch the state of a specific cart, identified by `cartId`.
+ * A custom product fragment can be provided to shape the product data in the response.
  *
  * @param props - The properties for retrieving a cart.
- *
  * @returns The details of the retrieved cart.
  *
  * @example
@@ -26,11 +33,13 @@ export async function getCart(props: GetCartProps): Promise<GetCartReturns> {
     throw new Error('Cart ID is required to retrieve a cart.');
   }
 
+  const productFragment = props.productFragment || getFragment(FragmentName.product);
+
   try {
-    const { data } = await client.post<GetCartReturns>('getCart', props);
+    const { data } = await client.post<GetCartReturns>('getCart', { ...props, productFragment });
     return data;
   } catch (error) {
     console.error('Error retrieving cart:', error);
-    throw new Error('Failed to retrieve cart. Please try again later.');
+    throw an Error('Failed to retrieve cart. Please try again later.');
   }
 }

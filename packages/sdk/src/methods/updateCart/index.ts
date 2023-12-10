@@ -1,20 +1,26 @@
 import { client } from '../../client';
-import { CartDetails } from '../../types/cart';
+import { getFragment } from '../../fragments';
+import { CartDetails, FlatCartLine } from '../../types/cart';
+import { FragmentInstance, FragmentName } from '../../types';
 
 export type UpdateCartProps = {
   cartId: string;
   addLines?: Array<{ merchandiseId: string; quantity: number }>;
   removeLineIds?: Array<string>;
   updateLines?: Array<{ id: string; quantity: number }>;
+  productFragment?: FragmentInstance;
 };
 
-export type UpdateCartReturns = CartDetails;
+export type UpdateCartReturns = {
+  id: CartDetails['id'];
+  checkoutUrl: CartDetails['checkoutUrl'];
+  lines: Array<FlatCartLine>;
+};
 
 /**
  * Updates the contents of an existing shopping cart.
  *
  * @param props - The properties for cart update, including the cart ID and details for add, remove, and update operations.
- *
  * @returns The details of the updated cart.
  *
  * @example
@@ -46,8 +52,10 @@ export async function updateCart(props: UpdateCartProps): Promise<UpdateCartRetu
     throw new Error('No update operation specified. Please provide addLines, removeLineIds, or updateLines');
   }
 
+  const productFragment = props.productFragment || getFragment(FragmentName.product);
+
   try {
-    const { data } = await client.post<UpdateCartReturns>('updateCart', props);
+    const { data } = await client.post<UpdateCartReturns>('updateCart', { ...props, productFragment });
     return data;
   } catch (error) {
     console.error('Error updating cart:', error);

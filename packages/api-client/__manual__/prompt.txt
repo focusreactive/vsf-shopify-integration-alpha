@@ -1,0 +1,384 @@
+From api-client package:
+
+src/api/index.ts
+```
+export { exampleEndpoint } from './exampleEndpoint';
+export { getProduct } from './getProduct';
+export { customQuery } from './customQuery';
+export { getProducts } from './getProducts';
+export { initCart } from './initCart';
+export { getCart } from './getCart';
+export { updateCart } from './updateCart';
+```
+
+src/api/initCart/index.ts
+```
+import {
+  CART_DETAILS_FRAGMENT,
+  CREATE_CART_MUTATION,
+} from '../../model/queries';
+import { CartDetails, FlatCartLine } from '../../model/types';
+import { FragmentInstance, ShopifyIntegrationContext } from '../../types';
+import { flattenCartLines } from '../../model/cart';
+
+export type InitCartProps = {
+  lines: Array<{ merchandiseId: string; quantity: number }>;
+  productFragment: FragmentInstance;
+};
+
+export type InitCartFunction = (
+  context: ShopifyIntegrationContext,
+  params: InitCartProps
+) => Promise<{
+  id: CartDetails['id'];
+  checkoutUrl: CartDetails['checkoutUrl'];
+  lines: Array<FlatCartLine>;
+}>;
+
+export const initCart: InitCartFunction = async (context, params) => {
+  const { storefrontClient } = context.client;
+
+  if (!params.lines || params.lines.length === 0) {
+    throw new Error('Lines are required to initialize a new cart');
+  }
+  if (!params.productFragment) {
+    throw new Error('Product fragment is required to shape the product data');
+  }
+
+  const cartFragment = CART_DETAILS_FRAGMENT(params.productFragment);
+
+  const response = await storefrontClient.query<{
+    data: { cartCreate: { cart: CartDetails } };
+  }>({
+    data: {
+      query: `${CREATE_CART_MUTATION}
+      ${cartFragment}`,
+      variables: { lines: params.lines },
+    },
+  });
+
+  const cart = response?.body?.data?.cartCreate.cart;
+
+  if (!cart) {
+    throw new Error('Failed to initialize cart');
+  }
+
+  return { ...cart, lines: flattenCartLines(cart) };
+};
+```
+
+
+src/model/types.ts
+```
+export type CartResponseType = {
+  data: CartDetails;
+};
+
+export type CartDetails = {
+  id: string;
+  checkoutUrl: string;
+  lines: {
+    edges: Array<{
+      node: {
+        id: string;
+        merchandise: {
+          product: {
+            title: string;
+          };
+        };
+        quantity: number;
+      };
+    }>;
+  };
+};
+
+
+export type FlatCartLine = {
+  id: string;
+  merchandise: {
+    product: {
+      title: string;
+    };
+  };
+  quantity: number;
+};
+```
+
+src/model/queries.ts
+```
+// GraphQL fragment for cart details
+export const CART_DETAILS_FRAGMENT = (productFragment) => `#graphql
+  fragment cartDetails on Cart {
+    id
+    checkoutUrl
+    lines(first: 5) {
+      edges {
+        node {
+          id
+          merchandise {
+            ... on ProductVariant {
+              product {
+                ${productFragment}
+              }
+            }
+          }
+          quantity
+        }
+      }
+    }
+  }
+`;
+
+
+// GraphQL mutation for creating a new cart
+export const CREATE_CART_MUTATION = `#graphql
+  mutation CreateCart($lines: [CartLineInput!]!) {
+    cartCreate(input: { lines: $lines }) {
+      cart {
+        ...cartDetails
+      }
+    }
+  }
+`;
+
+
+// GraphQL query for retrieving an existing cart
+export const GET_CART_QUERY = `#graphql
+  query GetCart($cartId: ID!) {
+    cart(id: $cartId) {
+      ...cartDetails
+    }
+  }
+`;
+
+// GraphQL mutation for adding lines to a cart
+export const ADD_CART_LINES_MUTATION = `#graphql
+  mutation AddCartLines($cartId: ID!, $lines: [CartLineInput!]!) {
+    cartLinesAdd(cartId: $cartId, lines: $lines) {
+      cart {
+        ...cartDetails
+      }
+    }
+  }
+`;
+
+// GraphQL mutation for removing lines from a cart
+export const REMOVE_CART_LINES_MUTATION = `#graphql
+  mutation RemoveCartLines($cartId: ID!, $lineIds: [ID!]!) {
+    cartLinesRemove(cartId: $cartId, lineIds: $lineIds) {
+      cart {
+        ...cartDetails
+      }
+    }
+  }
+`;
+
+// GraphQL mutation for updating cart lines
+export const UPDATE_CART_LINES_MUTATION = `#graphql
+  mutation UpdateCartLines($cartId: ID!, $lines: [CartLineUpdateInput!]!) {
+    cartLinesUpdate(cartId: $cartId, lines: $lines) {
+      cart {
+        ...cartDetails
+      }
+    }
+  }
+`;
+```
+
+src/model/cart.ts
+```
+import { CartDetails, CartResponseType, FlatCartLine } from "./types";
+
+
+export const flattenCartLines = (
+  cartResponse: CartDetails
+): FlatCartLine[] => {
+  const lines = cartResponse.lines.edges.map((edge) => edge.node);
+  return lines;
+};
+```
+
+src/types/api/endpoints.ts
+```
+import { ShopifyIntegrationContext } from '..';
+import { InitCartFunction } from '../../api/initCart';
+import { GetCartFunction } from '../../api/getCart';
+import { UpdateCartFunction } from '../../api/updateCart';
+import { GetProduct } from '../../api/getProduct';
+import { GetProducts } from '../../api/getProducts';
+
+/**
+ * Definition of all API-client methods available in {@link https://docs.vuestorefront.io/v2/advanced/context.html#context-api | context}.
+ */
+export interface Endpoints {
+  exampleEndpoint(
+    context: ShopifyIntegrationContext,
+    params: any // Update with specific type if available
+  ): Promise<any>; // Update with specific return type if available
+
+  getProduct: GetProduct;
+
+  customQuery(
+    context: ShopifyIntegrationContext,
+    params: any // Update with specific type if available
+  ): Promise<any>; // Update with specific return type if available
+
+  getProducts: GetProducts;
+
+  initCart: InitCartFunction;
+
+  getCart: GetCartFunction;
+
+  updateCart: UpdateCartFunction;
+}
+```
+
+From SDK package
+
+src/methods/index.ts
+```
+export { exampleMethod } from './exampleMethod';
+
+export { getProduct } from './getProduct';
+export { customQuery } from './customQuery';
+export { getProducts } from './getProducts';
+export { initCart } from './initCart';
+export { getCart } from './getCart';
+export { updateCart } from './updateCart';
+```
+
+src/methods/initCart/index.ts
+```
+import { client } from '../../client';
+import { getFragment } from '../../fragments';
+import { FragmentInstance, FragmentName } from '../../types';
+import { CartDetails, FlatCartLine } from '../../types/cart';
+
+
+type InitCartProps = {
+  lines: Array<{ merchandiseId: string; quantity: number }>;
+  productFragment?: FragmentInstance;
+};
+
+type InitCartReturns = {
+  id: CartDetails['id'];
+  checkoutUrl: CartDetails['checkoutUrl'];
+  lines: Array<FlatCartLine>;
+};
+
+/**
+ * Initiates a new shopping cart with specified line items and product fragment.
+ *
+ * @remarks
+ * This method is used to create a new cart with line items. It allows passing a custom product fragment
+ * to shape the product data in the response. The method interacts with the 'initCart' endpoint of the API middleware.
+ *
+ * @param props - The properties for cart creation, including line items and an optional productFragment.
+ * @returns The details of the newly created cart.
+ *
+ * @example
+* // To create a new cart with a single product
+* initCart({
+*   lines: [{ merchandiseId: "gid://shopify/ProductVariant/12345", quantity: 1 }],
+*   productFragment: yourCustomProductFragment, // Optional, falls back to default if not provided
+* });
+*/
+export async function initCart(props: InitCartProps): Promise<InitCartReturns> {
+  if (!props.lines || props.lines.length === 0) {
+    throw new Error('Lines are required to create a new cart.');
+  }
+
+  const productFragment = props.productFragment || getFragment(FragmentName.product);
+
+  try {
+    const { data } = await client.post<InitCartReturns>('initCart', { ...props, productFragment });
+    if (!data || !data.id || !data.checkoutUrl || !data.lines) {
+      throw new Error('Invalid response structure from initCart endpoint');
+    }
+    return data;
+  } catch (error) {
+    console.error('Error creating cart:', error);
+    throw new Error('Failed to create cart. Please try again later.');
+  }
+}
+```
+
+src/client/index.ts
+```
+import axios from 'axios';
+
+export const client = axios.create();
+```
+
+src/types/cart.ts
+```
+export type CartDetails = {
+  id: string;
+  checkoutUrl: string;
+  lines: {
+    edges: Array<{
+      node: {
+        id: string;
+        merchandise: {
+          product: {
+            title: string;
+          };
+        };
+        quantity: number;
+      };
+    }>;
+  };
+};
+
+export type FlatCartLine = {
+  id: string;
+  merchandise: {
+    product: {
+      title: string;
+    };
+  };
+  quantity: number;
+};
+```
+
+src/fragments/index.ts
+```
+import { FragmentInstance, FragmentName, FragmentsStore } from '../types';
+
+export const fragmentsStore: FragmentsStore = {};
+
+export const prepareFragments = (fragments: FragmentsStore) => {
+  Object.entries(fragments).forEach(([fragmentName, fragmentInstance]) => {
+    fragmentsStore[fragmentName] = fragmentInstance;
+  });
+};
+
+export const getFragment = (fragmentName: FragmentName): FragmentInstance =>
+  fragmentsStore[fragmentName];
+```
+
+src/connector.ts
+```
+import { client } from './client';
+import { Options } from './types';
+import * as methods from './methods/index';
+import { prepareFragments } from './fragments';
+
+/**
+ * Connector methods.
+ */
+type Methods = typeof methods;
+
+/**
+ * Initialize the Boilerplate connector.
+ */
+export const shopifyConnector = (options: Options): Methods => {
+  client.defaults.baseURL = options.apiUrl;
+  prepareFragments(options.fragments);
+
+  return methods;
+};
+```
+
+
+you should rely on updated versions of these files if we update them during the conversation
