@@ -1,16 +1,26 @@
-import { CART_DETAILS_FRAGMENT, CREATE_CART_MUTATION } from '../../model/queries';
-import { CartDetails, CartResponseType } from '../../model/types';
+import {
+  CART_DETAILS_FRAGMENT,
+  CREATE_CART_MUTATION,
+} from '../../model/queries';
+import { CartDetails, FlatCartLine } from '../../model/types';
 import { FragmentInstance, ShopifyIntegrationContext } from '../../types';
+import { flattenCartLines } from '../../model/cart';
 
 export type InitCartProps = {
   lines: Array<{ merchandiseId: string; quantity: number }>;
   productFragment: FragmentInstance;
 };
 
-export const initCart = async (
+export type InitCartFunction = (
   context: ShopifyIntegrationContext,
   params: InitCartProps
-): Promise<CartResponseType> => {
+) => Promise<{
+  id: CartDetails['id'];
+  checkoutUrl: CartDetails['checkoutUrl'];
+  lines: Array<FlatCartLine>;
+}>;
+
+export const initCart: InitCartFunction = async (context, params) => {
   const { storefrontClient } = context.client;
 
   if (!params.lines || params.lines.length === 0) {
@@ -32,5 +42,11 @@ export const initCart = async (
     },
   });
 
-  return { data: response?.body?.data?.cartCreate.cart };
+  const cart = response?.body?.data?.cartCreate.cart;
+
+  if (!cart) {
+    throw new Error('Failed to initialize cart');
+  }
+
+  return { ...cart, lines: flattenCartLines(cart) };
 };

@@ -1,11 +1,12 @@
 import { ShopifyIntegrationContext, FragmentInstance } from '../../types';
-import { CartDetails, CartResponseType } from '../../model/types';
+import { CartDetails, CartResponseType, FlatCartLine } from '../../model/types';
 import {
   ADD_CART_LINES_MUTATION,
   REMOVE_CART_LINES_MUTATION,
   UPDATE_CART_LINES_MUTATION,
-  CART_DETAILS_FRAGMENT
+  CART_DETAILS_FRAGMENT,
 } from '../../model/queries';
+import { flattenCartLines } from '../../model/cart';
 
 export type UpdateCartProps = {
   cartId: string;
@@ -15,10 +16,16 @@ export type UpdateCartProps = {
   productFragment: FragmentInstance;
 };
 
-export const updateCart = async (
+export type UpdateCartFunction = (
   context: ShopifyIntegrationContext,
   params: UpdateCartProps
-): Promise<CartResponseType> => {
+) => Promise<{
+  id: CartDetails['id'];
+  checkoutUrl: CartDetails['checkoutUrl'];
+  lines: Array<FlatCartLine>;
+}>;
+
+export const updateCart: UpdateCartFunction = async (context, params) => {
   const { storefrontClient } = context.client;
 
   if (!params.cartId) {
@@ -88,8 +95,10 @@ export const updateCart = async (
       throw new Error('No changes were made to the cart');
     }
 
-    return { data: updatedCartDetails };
-
+    return {
+      ...updatedCartDetails,
+      lines: flattenCartLines(updatedCartDetails),
+    };
   } catch (error) {
     console.error('Error updating cart:', error);
     throw new Error('Failed to update cart. Please try again later.');

@@ -1,8 +1,7 @@
 import { ShopifyIntegrationContext } from '..';
-import { CartResponseType } from '../../model/types';
-import { InitCartProps } from '../../api/initCart';
-import { GetCartProps } from '../../api/getCart';
-import { UpdateCartProps } from '../../api/updateCart';
+import { InitCartFunction } from '../../api/initCart';
+import { GetCartFunction } from '../../api/getCart';
+import { UpdateCartFunction } from '../../api/updateCart';
 import { GetProduct } from '../../api/getProduct';
 import { GetProducts } from '../../api/getProducts';
 
@@ -24,18 +23,9 @@ export interface Endpoints {
 
   getProducts: GetProducts;
 
-  initCart: (
-    context: ShopifyIntegrationContext,
-    params: InitCartProps
-  ) => Promise<CartResponseType>;
+  initCart: InitCartFunction;
 
-  getCart: (
-    context: ShopifyIntegrationContext,
-    params: GetCartProps
-  ) => Promise<CartResponseType>;
+  getCart: GetCartFunction;
 
-  updateCart: (
-    context: ShopifyIntegrationContext,
-    params: UpdateCartProps
-  ) => Promise<CartResponseType>;
+  updateCart: UpdateCartFunction;
 }

@@ -1,17 +1,23 @@
 import { GET_CART_QUERY, CART_DETAILS_FRAGMENT } from '../../model/queries';
-import { CartDetails, CartResponseType } from '../../model/types';
+import { CartDetails, CartResponseType, FlatCartLine } from '../../model/types';
 import { ShopifyIntegrationContext, FragmentInstance } from '../../types';
+import { flattenCartLines } from '../../model/cart';
 
-// Define the function type for getCart
 export type GetCartProps = {
   cartId: string;
   productFragment: FragmentInstance;
 };
 
-export const getCart = async (
+export type GetCartFunction = (
   context: ShopifyIntegrationContext,
   params: GetCartProps
-): Promise<CartResponseType> => {
+) => Promise<{
+  id: CartDetails['id'];
+  checkoutUrl: CartDetails['checkoutUrl'];
+  lines: Array<FlatCartLine>;
+}>;
+
+export const getCart: GetCartFunction = async (context, params) => {
   const { storefrontClient } = context.client;
 
   if (!params.cartId) {
@@ -34,8 +40,13 @@ export const getCart = async (
       },
     });
 
-    return { data: response?.body?.data?.cart };
+    const cart = response?.body?.data?.cart;
 
+    if (!cart) {
+      throw new Error('Failed to initialize cart');
+    }
+
+    return { ...cart, lines: flattenCartLines(cart) };
   } catch (error) {
     console.error('Error retrieving cart:', error);
     throw new Error('Failed to retrieve cart. Please try again later.');

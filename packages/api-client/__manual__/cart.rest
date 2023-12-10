@@ -16,7 +16,7 @@ Content-Type: application/json
 
 ###
 
-@cartId = {{initCart.response.body.$.data.id}}
+@cartId = {{initCart.response.body.$.id}}
 
 # Get cart id and get the cart
 # @name getCart
@@ -30,7 +30,7 @@ Content-Type: application/json
 
 ###
 
-@lineId1 = {{getCart.response.body.$.data.lines.edges[0].node.id}}
+@lineId1 = {{getCart.response.body.$.lines[0].id}}
 
 # Update cart - Add new line item
 # @name updateCartAddLine
@@ -50,7 +50,7 @@ Content-Type: application/json
 
 ###
 
-@lineId2 = {{updateCartAddLine.response.body.$.data.lines.edges[1].node.id}}
+@lineId2 = {{updateCartAddLine.response.body.$.lines[1].id}}
 
 # Update cart - Remove line item
 # @name updateCartRemoveLine
