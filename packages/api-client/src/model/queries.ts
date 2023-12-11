@@ -21,10 +21,12 @@ export const CART_DETAILS_FRAGMENT = (productFragment) => `#graphql
   }
 `;
 
+// TODO: this should be moved to frontend as default product Fragment
 export const PRODUCT_DETAILS_FRAGMENT = (productAdditionalFields) => `#graphql
   fragment productDetails on Product {
     id
     title
+    slug: handle
     description
     images(first: 5) {
       edges {
@@ -39,15 +41,17 @@ export const PRODUCT_DETAILS_FRAGMENT = (productAdditionalFields) => `#graphql
         node {
           id
           title
-          price
+          sku
+          price {
+            amount
+            currencyCode
+          }
         }
       }
     }
     ${productAdditionalFields}
   }
 `;
-
-
 
 // GraphQL mutation for creating a new cart
 export const CREATE_CART_MUTATION = `#graphql
@@ -59,7 +63,6 @@ export const CREATE_CART_MUTATION = `#graphql
     }
   }
 `;
-
 
 // GraphQL query for retrieving an existing cart
 export const GET_CART_QUERY = `#graphql
@@ -115,6 +118,40 @@ export const GET_PRODUCT_BY_HANDLE_QUERY = `#graphql
   query GetProductByHandle($productHandle: String!) {
     productByHandle(handle: $productHandle) {
       ...productDetails
+    }
+  }
+`;
+
+export const GET_PRODUCTS_FROM_COLLECTION_QUERY = `#graphql
+  query GetProductsFromCollection($collectionHandle: String!, $first: Int = 24, $after: String, $sortKey: ProductCollectionSortKeys, $reverse: Boolean, $filters: [ProductFilter!]) {
+    collection(handle: $collectionHandle) {
+      products(first: $first, after: $after, sortKey: $sortKey, reverse: $reverse, filters: $filters) {
+        edges {
+          node {
+            ...productDetails
+          }
+        }
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+      }
+    }
+  }
+`;
+
+export const GET_PRODUCTS_QUERY = `#graphql
+  query GetAllProducts($first: Int = 24, $after: String, $sortKey: ProductSortKeys, $reverse: Boolean, $query: String) {
+    products(first: $first, after: $after, sortKey: $sortKey, reverse: $reverse, query: $query) {
+      edges {
+        node {
+          ...productDetails
+        }
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
     }
   }
 `;

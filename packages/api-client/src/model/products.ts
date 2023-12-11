@@ -15,7 +15,7 @@ export const flattenVariantData = (variants: {
     const { id, sku, title, price } = edge.node;
 
     // Check for required fields
-    if (!id || !sku || !title || !price) {
+    if (!id || sku === undefined || !title || !price) {
       throw new Error('Missing required fields in variant data');
     }
 

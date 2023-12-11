@@ -1,0 +1,91 @@
+# Get all products
+POST http://localhost:8181/shopify/getProducts
+Content-Type: application/json
+
+{
+  "productFragment": "title"
+}
+
+###
+
+# Fetch multiple products with pagination
+
+# @name getMultipleProducts
+POST http://localhost:8181/shopify/getProducts
+Content-Type: application/json
+
+{
+  "sorting": { "sortKey": "PRICE", "direction": "ASC" },
+  "pagination": { "after": "", "first": 3 },
+  "productFragment": "title"
+}
+
+###
+
+# Fetch products with a specific set of filters
+
+# @name getFilteredProducts
+POST http://localhost:8181/shopify/getProducts
+Content-Type: application/json
+
+{
+  "query": "title:'The Minimal Snowboard'",
+  "productFragment": "title"
+}
+
+###
+
+# Attempt to fetch products with invalid parameters
+
+# @name getProductsInvalidParams
+POST http://localhost:8181/shopify/getProducts
+Content-Type: application/json
+
+{
+  "query": "ttt:'The Minimal Snowboard'",
+  "productFragment": "title"
+}
+
+###
+
+########## Products in a collection ##########
+
+# Get all products in a collection
+POST http://localhost:8181/shopify/getProducts
+Content-Type: application/json
+
+{
+  "productFragment": "title",
+  "collectionHandle": "frontpage"
+}
+
+###
+
+# Fetch multiple products with pagination
+
+# @name getMultipleProducts
+POST http://localhost:8181/shopify/getProducts
+Content-Type: application/json
+
+{
+  "sorting": { "sortKey": "PRICE", "direction": "ASC" },
+  "pagination": { "after": "", "first": 3 },
+  "productFragment": "title",
+  "collectionHandle": "frontpage"
+}
+
+###
+
+
+########## Get a Product ##########
+
+# Get a single product
+POST http://localhost:8181/shopify/getProduct
+Content-Type: application/json
+
+{
+  "productFragment": "title",
+  "productHandle": "the-minimal-snowboard"
+}
+
+###

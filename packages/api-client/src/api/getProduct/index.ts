@@ -1,5 +1,8 @@
 import { FragmentInstance, ShopifyIntegrationContext } from '../../types';
-import { ProductQueryResponseType, ProductResponseType, VariantDetails } from '../../model/types';
+import {
+  ProductQueryResponseType,
+  ProductResponseType,
+} from '../../model/types';
 import {
   GET_PRODUCT_BY_HANDLE_QUERY,
   PRODUCT_DETAILS_FRAGMENT,
@@ -17,6 +20,11 @@ type GetProductQueryResponse = {
   };
 };
 
+export type GetProductFunction = (
+  context: ShopifyIntegrationContext,
+  params: GetProductProps
+) => Promise<ProductResponseType>;
+
 /**
  * Retrieves product details by product handle.
  * Ensures that the response includes all mandatory fields for the product and its variants.
@@ -28,10 +36,7 @@ type GetProductQueryResponse = {
  * @returns {Promise<ProductResponseType>} - The product details with flattened variant data.
  * @throws {Error} If required fields are missing in the response.
  */
-export const getProduct = async (
-  context: ShopifyIntegrationContext,
-  params: GetProductProps
-): Promise<ProductResponseType> => {
+export const getProduct: GetProductFunction = async (context, params) => {
   const { storefrontClient } = context.client;
 
   if (!params.productHandle) {
@@ -59,7 +64,7 @@ export const getProduct = async (
 
     // Check for required product fields
     const { id, title, description, slug, priceRange, variants } = product;
-    if (!id || !title || !description || !slug || !priceRange || !variants) {
+    if (!id || !title || description === undefined || !slug || !variants) {
       throw new Error('Missing required fields in product data');
     }
 
