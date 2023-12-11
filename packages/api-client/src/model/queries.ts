@@ -3,7 +3,7 @@ export const CART_DETAILS_FRAGMENT = (productFragment) => `#graphql
   fragment cartDetails on Cart {
     id
     checkoutUrl
-    lines(first: 5) {
+    lines(first: 20) {
       edges {
         node {
           id
@@ -20,6 +20,33 @@ export const CART_DETAILS_FRAGMENT = (productFragment) => `#graphql
     }
   }
 `;
+
+export const PRODUCT_DETAILS_FRAGMENT = (productAdditionalFields) => `#graphql
+  fragment productDetails on Product {
+    id
+    title
+    description
+    images(first: 5) {
+      edges {
+        node {
+          src
+          altText
+        }
+      }
+    }
+    variants(first: 20) {
+      edges {
+        node {
+          id
+          title
+          price
+        }
+      }
+    }
+    ${productAdditionalFields}
+  }
+`;
+
 
 
 // GraphQL mutation for creating a new cart
@@ -72,6 +99,22 @@ export const UPDATE_CART_LINES_MUTATION = `#graphql
       cart {
         ...cartDetails
       }
+    }
+  }
+`;
+
+export const GET_PRODUCT_QUERY = `#graphql
+  query GetProduct($productId: ID!) {
+    product(id: $productId) {
+      ...productDetails
+    }
+  }
+`;
+
+export const GET_PRODUCT_BY_HANDLE_QUERY = `#graphql
+  query GetProductByHandle($productHandle: String!) {
+    productByHandle(handle: $productHandle) {
+      ...productDetails
     }
   }
 `;

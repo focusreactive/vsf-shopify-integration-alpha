@@ -1,35 +1,77 @@
 import { FragmentInstance, ShopifyIntegrationContext } from '../../types';
+import { ProductQueryResponseType, ProductResponseType, VariantDetails } from '../../model/types';
+import {
+  GET_PRODUCT_BY_HANDLE_QUERY,
+  PRODUCT_DETAILS_FRAGMENT,
+} from '../../model/queries';
+import { flattenVariantData } from '../../model/products';
 
-export type GetProduct = (
+type GetProductProps = {
+  productHandle: string;
+  productFragment: FragmentInstance;
+};
+
+type GetProductQueryResponse = {
+  data: {
+    productByHandle: ProductQueryResponseType;
+  };
+};
+
+/**
+ * Retrieves product details by product handle.
+ * Ensures that the response includes all mandatory fields for the product and its variants.
+ * Required fields in product fragment: id, title, description, slug, priceRange, variants.
+ * Required fields in variant fragment: id, sku, title, price.
+ *
+ * @param {ShopifyIntegrationContext} context - The Shopify integration context.
+ * @param {GetProductProps} params - Parameters including product handle and product fragment.
+ * @returns {Promise<ProductResponseType>} - The product details with flattened variant data.
+ * @throws {Error} If required fields are missing in the response.
+ */
+export const getProduct = async (
   context: ShopifyIntegrationContext,
-  params: {
-    productFragment: FragmentInstance;
-    handle: string;
-  }
-) => Promise<{ product: Object }>;
-
-export const getProduct: GetProduct = async (context, params) => {
+  params: GetProductProps
+): Promise<ProductResponseType> => {
   const { storefrontClient } = context.client;
-  const { productFragment } = params;
 
-  const response = await storefrontClient.query<{ data: { product: Object } }>({
-    // TODO: switch to handle instead of id
-    data: {
-      query: `#graphql
-        query Product($handle: String!) {
-          product(handle: $handle) {
-            ...product
-          }
-        }
+  if (!params.productHandle) {
+    throw new Error('Product handle is required to retrieve product details');
+  }
+  if (!params.productFragment) {
+    throw new Error('Product fragment is required to shape the product data');
+  }
 
-        fragment product on Product ${productFragment}
-    `,
-      variables: {
-        handle: params.handle,
+  const productFragment = PRODUCT_DETAILS_FRAGMENT(params.productFragment);
+
+  try {
+    const response = await storefrontClient.query<GetProductQueryResponse>({
+      data: {
+        query: `${GET_PRODUCT_BY_HANDLE_QUERY}
+                ${productFragment}`,
+        variables: { productHandle: params.productHandle },
       },
-    },
-  });
-  const data = response?.body?.data;
+    });
 
-  return data;
+    const product = response?.body?.data?.productByHandle;
+    if (!product) {
+      throw new Error('Failed to retrieve product details');
+    }
+
+    // Check for required product fields
+    const { id, title, description, slug, priceRange, variants } = product;
+    if (!id || !title || !description || !slug || !priceRange || !variants) {
+      throw new Error('Missing required fields in product data');
+    }
+
+    // Flatten variants and check for required fields
+    const flattenedVariants = flattenVariantData(product.variants);
+
+    return {
+      ...product,
+      variants: flattenedVariants,
+    };
+  } catch (error) {
+    console.error('Error retrieving product:', error);
+    throw new Error('Failed to retrieve product. Please try again later.');
+  }
 };

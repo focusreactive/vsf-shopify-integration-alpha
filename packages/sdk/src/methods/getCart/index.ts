@@ -40,6 +40,6 @@ export async function getCart(props: GetCartProps): Promise<GetCartReturns> {
     return data;
   } catch (error) {
     console.error('Error retrieving cart:', error);
-    throw an Error('Failed to retrieve cart. Please try again later.');
+    throw new Error('Failed to retrieve cart. Please try again later.');
   }
 }
