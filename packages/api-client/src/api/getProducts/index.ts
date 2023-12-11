@@ -79,7 +79,6 @@ export type GetProductsFunction = (
  * - title: Product title.
  * - description: Product description.
  * - slug: SEO-friendly URL slug for the product.
- * - priceRange: Price range of the product.
  * - variants: Variants available for the product.
  *
  * Required fields in each variant fragment include:

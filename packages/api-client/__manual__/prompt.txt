@@ -1,7 +1,6 @@
-From api-client package:
+From the api-client package:
 
 src/api/index.ts
-```
 export { exampleEndpoint } from './exampleEndpoint';
 export { getProduct } from './getProduct';
 export { customQuery } from './customQuery';
@@ -9,10 +8,9 @@ export { getProducts } from './getProducts';
 export { initCart } from './initCart';
 export { getCart } from './getCart';
 export { updateCart } from './updateCart';
-```
+
 
 src/api/initCart/index.ts
-```
 import {
   CART_DETAILS_FRAGMENT,
   CREATE_CART_MUTATION,
@@ -65,11 +63,8 @@ export const initCart: InitCartFunction = async (context, params) => {
 
   return { ...cart, lines: flattenCartLines(cart) };
 };
-```
-
 
 src/model/types.ts
-```
 export type CartResponseType = {
   data: CartDetails;
 };
@@ -102,16 +97,62 @@ export type FlatCartLine = {
   };
   quantity: number;
 };
-```
+
+export type VariantDetails = {
+  id: string;
+  sku: string;
+  title: string;
+  price: {
+    amount: string;
+    currencyCode: string;
+  };
+};
+
+export type ProductQueryResponseType = {
+  id: string;
+  title: string;
+  description: string;
+  slug: string;
+  priceRange: {
+    minVariantPrice: {
+      amount: string;
+      currencyCode: string;
+    };
+    maxVariantPrice: {
+      amount: string;
+      currencyCode: string;
+    };
+  };
+  variants: {
+    edges: { node: VariantDetails }[];
+  };
+};
+
+export type ProductResponseType = {
+  id: string;
+  title: string;
+  description: string;
+  slug: string;
+  priceRange: {
+    minVariantPrice: {
+      amount: string;
+      currencyCode: string;
+    };
+    maxVariantPrice: {
+      amount: string;
+      currencyCode: string;
+    };
+  };
+  variants: VariantDetails[];
+};
 
 src/model/queries.ts
-```
 // GraphQL fragment for cart details
 export const CART_DETAILS_FRAGMENT = (productFragment) => `#graphql
   fragment cartDetails on Cart {
     id
     checkoutUrl
-    lines(first: 5) {
+    lines(first: 20) {
       edges {
         node {
           id
@@ -129,6 +170,37 @@ export const CART_DETAILS_FRAGMENT = (productFragment) => `#graphql
   }
 `;
 
+// TODO: this should be moved to frontend as default product Fragment
+export const PRODUCT_DETAILS_FRAGMENT = (productAdditionalFields) => `#graphql
+  fragment productDetails on Product {
+    id
+    title
+    slug: handle
+    description
+    images(first: 5) {
+      edges {
+        node {
+          src
+          altText
+        }
+      }
+    }
+    variants(first: 20) {
+      edges {
+        node {
+          id
+          title
+          sku
+          price {
+            amount
+            currencyCode
+          }
+        }
+      }
+    }
+    ${productAdditionalFields}
+  }
+`;
 
 // GraphQL mutation for creating a new cart
 export const CREATE_CART_MUTATION = `#graphql
@@ -140,7 +212,6 @@ export const CREATE_CART_MUTATION = `#graphql
     }
   }
 `;
-
 
 // GraphQL query for retrieving an existing cart
 export const GET_CART_QUERY = `#graphql
@@ -183,10 +254,59 @@ export const UPDATE_CART_LINES_MUTATION = `#graphql
     }
   }
 `;
-```
+
+export const GET_PRODUCT_QUERY = `#graphql
+  query GetProduct($productId: ID!) {
+    product(id: $productId) {
+      ...productDetails
+    }
+  }
+`;
+
+export const GET_PRODUCT_BY_HANDLE_QUERY = `#graphql
+  query GetProductByHandle($productHandle: String!) {
+    productByHandle(handle: $productHandle) {
+      ...productDetails
+    }
+  }
+`;
+
+export const GET_PRODUCTS_FROM_COLLECTION_QUERY = `#graphql
+  query GetProductsFromCollection($collectionHandle: String!, $first: Int = 24, $after: String, $sortKey: ProductCollectionSortKeys, $reverse: Boolean, $filters: [ProductFilter!]) {
+    collection(handle: $collectionHandle) {
+      products(first: $first, after: $after, sortKey: $sortKey, reverse: $reverse, filters: $filters) {
+        edges {
+          node {
+            ...productDetails
+          }
+        }
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+      }
+    }
+  }
+`;
+
+export const GET_PRODUCTS_QUERY = `#graphql
+  query GetAllProducts($first: Int = 24, $after: String, $sortKey: ProductSortKeys, $reverse: Boolean, $query: String) {
+    products(first: $first, after: $after, sortKey: $sortKey, reverse: $reverse, query: $query) {
+      edges {
+        node {
+          ...productDetails
+        }
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+    }
+  }
+`;
+
 
 src/model/cart.ts
-```
 import { CartDetails, CartResponseType, FlatCartLine } from "./types";
 
 
@@ -196,16 +316,15 @@ export const flattenCartLines = (
   const lines = cartResponse.lines.edges.map((edge) => edge.node);
   return lines;
 };
-```
+
 
 src/types/api/endpoints.ts
-```
 import { ShopifyIntegrationContext } from '..';
 import { InitCartFunction } from '../../api/initCart';
 import { GetCartFunction } from '../../api/getCart';
 import { UpdateCartFunction } from '../../api/updateCart';
-import { GetProduct } from '../../api/getProduct';
-import { GetProducts } from '../../api/getProducts';
+import { GetProductFunction } from '../../api/getProduct';
+import { GetProductsFunction } from '../../api/getProducts';
 
 /**
  * Definition of all API-client methods available in {@link https://docs.vuestorefront.io/v2/advanced/context.html#context-api | context}.
@@ -216,14 +335,14 @@ export interface Endpoints {
     params: any // Update with specific type if available
   ): Promise<any>; // Update with specific return type if available
 
-  getProduct: GetProduct;
+  getProduct: GetProductFunction;
 
   customQuery(
     context: ShopifyIntegrationContext,
     params: any // Update with specific type if available
   ): Promise<any>; // Update with specific return type if available
 
-  getProducts: GetProducts;
+  getProducts: GetProductsFunction;
 
   initCart: InitCartFunction;
 
@@ -231,12 +350,11 @@ export interface Endpoints {
 
   updateCart: UpdateCartFunction;
 }
-```
 
-From SDK package
+
+From the SDK package:
 
 src/methods/index.ts
-```
 export { exampleMethod } from './exampleMethod';
 
 export { getProduct } from './getProduct';
@@ -245,73 +363,13 @@ export { getProducts } from './getProducts';
 export { initCart } from './initCart';
 export { getCart } from './getCart';
 export { updateCart } from './updateCart';
-```
-
-src/methods/initCart/index.ts
-```
-import { client } from '../../client';
-import { getFragment } from '../../fragments';
-import { FragmentInstance, FragmentName } from '../../types';
-import { CartDetails, FlatCartLine } from '../../types/cart';
-
-
-type InitCartProps = {
-  lines: Array<{ merchandiseId: string; quantity: number }>;
-  productFragment?: FragmentInstance;
-};
-
-type InitCartReturns = {
-  id: CartDetails['id'];
-  checkoutUrl: CartDetails['checkoutUrl'];
-  lines: Array<FlatCartLine>;
-};
-
-/**
- * Initiates a new shopping cart with specified line items and product fragment.
- *
- * @remarks
- * This method is used to create a new cart with line items. It allows passing a custom product fragment
- * to shape the product data in the response. The method interacts with the 'initCart' endpoint of the API middleware.
- *
- * @param props - The properties for cart creation, including line items and an optional productFragment.
- * @returns The details of the newly created cart.
- *
- * @example
-* // To create a new cart with a single product
-* initCart({
-*   lines: [{ merchandiseId: "gid://shopify/ProductVariant/12345", quantity: 1 }],
-*   productFragment: yourCustomProductFragment, // Optional, falls back to default if not provided
-* });
-*/
-export async function initCart(props: InitCartProps): Promise<InitCartReturns> {
-  if (!props.lines || props.lines.length === 0) {
-    throw new Error('Lines are required to create a new cart.');
-  }
-
-  const productFragment = props.productFragment || getFragment(FragmentName.product);
-
-  try {
-    const { data } = await client.post<InitCartReturns>('initCart', { ...props, productFragment });
-    if (!data || !data.id || !data.checkoutUrl || !data.lines) {
-      throw new Error('Invalid response structure from initCart endpoint');
-    }
-    return data;
-  } catch (error) {
-    console.error('Error creating cart:', error);
-    throw new Error('Failed to create cart. Please try again later.');
-  }
-}
-```
 
 src/client/index.ts
-```
 import axios from 'axios';
 
 export const client = axios.create();
-```
 
 src/types/cart.ts
-```
 export type CartDetails = {
   id: string;
   checkoutUrl: string;
@@ -339,10 +397,9 @@ export type FlatCartLine = {
   };
   quantity: number;
 };
-```
+
 
 src/fragments/index.ts
-```
 import { FragmentInstance, FragmentName, FragmentsStore } from '../types';
 
 export const fragmentsStore: FragmentsStore = {};
@@ -355,10 +412,9 @@ export const prepareFragments = (fragments: FragmentsStore) => {
 
 export const getFragment = (fragmentName: FragmentName): FragmentInstance =>
   fragmentsStore[fragmentName];
-```
+
 
 src/connector.ts
-```
 import { client } from './client';
 import { Options } from './types';
 import * as methods from './methods/index';
@@ -378,7 +434,288 @@ export const shopifyConnector = (options: Options): Methods => {
 
   return methods;
 };
-```
 
 
-you should rely on updated versions of these files if we update them during the conversation
+Additional files from api-client:
+
+src/api/getProducts/index.ts
+import { FragmentInstance, ShopifyIntegrationContext } from '../../types';
+import {
+  ProductResponseType,
+  ProductQueryResponseType,
+} from '../../model/types';
+import {
+  GET_PRODUCTS_FROM_COLLECTION_QUERY,
+  GET_PRODUCTS_QUERY,
+  PRODUCT_DETAILS_FRAGMENT,
+} from '../../model/queries';
+import { flattenVariantData } from '../../model/products';
+
+export type GetProductsProps = {
+  productFragment: FragmentInstance;
+  collectionHandle?: string;
+  pagination?: {
+    after?: string | null;
+    first?: number;
+  };
+  sorting?: {
+    sortKey: SortKey;
+    direction?: 'ASC' | 'DESC';
+  };
+  query?: string;
+};
+
+enum SortKey {
+  TITLE = 'TITLE',
+  PRODUCT_TYPE = 'PRODUCT_TYPE',
+  VENDOR = 'VENDOR',
+  UPDATED_AT = 'UPDATED_AT',
+  CREATED_AT = 'CREATED_AT',
+  BEST_SELLING = 'BEST_SELLING',
+  PRICE = 'PRICE',
+  ID = 'ID',
+  RELEVANCE = 'RELEVANCE',
+}
+
+type GetProductsQueryResponse = {
+  data: {
+    products?: {
+      edges: Array<{ node: ProductQueryResponseType }>;
+      pageInfo: PageInfo;
+    };
+    collection?: {
+      products: {
+        edges: Array<{ node: ProductQueryResponseType }>;
+        pageInfo: PageInfo;
+      };
+    };
+  };
+};
+
+type PageInfo = {
+  hasNextPage: boolean;
+  endCursor: string | null;
+};
+
+export type GetProductsFunction = (
+  context: ShopifyIntegrationContext,
+  params: GetProductsProps
+) => Promise<{
+  products: Array<ProductResponseType>;
+  pageInfo: PageInfo;
+}>;
+
+/**
+ * Retrieves a list of products, optionally from a specific collection, with support for pagination and sorting.
+ *
+ * The function fetches products based on the provided parameters. If a collection handle is provided,
+ * it fetches products from that specific collection. Otherwise, it retrieves a general list of products.
+ * The function also supports pagination and sorting of the products.
+ *
+ * Ensures that the response includes all mandatory fields for the products and their variants.
+ * The function validates the presence of essential fields in the returned product data.
+ *
+ * Required fields in the product fragment include:
+ * - id: Unique identifier for each product.
+ * - title: Product title.
+ * - description: Product description.
+ * - slug: SEO-friendly URL slug for the product.
+ * - priceRange: Price range of the product.
+ * - variants: Variants available for the product.
+ *
+ * Required fields in each variant fragment include:
+ * - id: Unique identifier for each variant.
+ * - sku: Stock Keeping Unit for tracking inventory.
+ * - title: Title of the variant.
+ * - price: Price of the variant.
+ *
+ * @param {ShopifyIntegrationContext} context - The Shopify integration context, containing the client for API calls.
+ * @param {GetProductsProps} params - Parameters for fetching products. Includes:
+ *   - productFragment: A GraphQL fragment to shape product data.
+ *   - collectionHandle: (Optional) Handle of the collection from which to fetch products.
+ *   - pagination: (Optional) Pagination details, including 'after' cursor and 'first' (number of items).
+ *   - sorting: (Optional) Sorting preferences, including sort key and direction.
+ *   - query: (Optional) Additional query to filter products.
+ * @returns {Promise<{ products: Array<ProductResponseType>, pageInfo: PageInfo }>}
+ *   Returns an array of product details along with pagination information.
+ * @throws {Error} Throws an error if the product fragment is not provided or if there are missing required fields in product data.
+ */
+export const getProducts: GetProductsFunction = async (context, params) => {
+  const { storefrontClient } = context.client;
+
+  if (!params.productFragment) {
+    throw new Error('Product fragment is required to shape the product data');
+  }
+
+  const productFragment = PRODUCT_DETAILS_FRAGMENT(params.productFragment);
+  const queryVariables = {
+    first: params.pagination?.first || 24,
+    after: params.pagination?.after || null,
+    sortKey: params.sorting?.sortKey,
+    reverse: params.sorting?.direction === 'DESC',
+    query: params.query,
+    collectionHandle: params.collectionHandle,
+  };
+
+  const query = params.collectionHandle
+    ? GET_PRODUCTS_FROM_COLLECTION_QUERY
+    : GET_PRODUCTS_QUERY;
+
+  try {
+    const response = await storefrontClient.query<GetProductsQueryResponse>({
+      data: {
+        query: `${query}
+                ${productFragment}`,
+        variables: queryVariables,
+      },
+    });
+
+    const collectionData = params.collectionHandle
+      ? response?.body?.data?.collection?.products
+      : response?.body?.data?.products;
+
+    const productsEdges = collectionData?.edges || [];
+    const pageInfo = collectionData?.pageInfo;
+
+    const products = productsEdges.map((edge) => {
+      const product = edge.node;
+
+      const { id, title, description, slug, variants } = product;
+      if (!id || !title || description === undefined || !slug || !variants) {
+        throw new Error('Missing required fields in product data');
+      }
+
+      return {
+        ...product,
+        variants: flattenVariantData(product.variants),
+      };
+    });
+
+    return {
+      products,
+      pageInfo: {
+        hasNextPage: pageInfo?.hasNextPage || false,
+        endCursor: pageInfo?.endCursor || null,
+      },
+    };
+  } catch (error) {
+    console.error('Error retrieving products:', error);
+    throw new Error('Failed to retrieve products. Please try again later.');
+  }
+};
+
+src/api/getProduct/index.ts
+import { FragmentInstance, ShopifyIntegrationContext } from '../../types';
+import {
+  ProductQueryResponseType,
+  ProductResponseType,
+} from '../../model/types';
+import {
+  GET_PRODUCT_BY_HANDLE_QUERY,
+  PRODUCT_DETAILS_FRAGMENT,
+} from '../../model/queries';
+import { flattenVariantData } from '../../model/products';
+
+type GetProductProps = {
+  productHandle: string;
+  productFragment: FragmentInstance;
+};
+
+type GetProductQueryResponse = {
+  data: {
+    productByHandle: ProductQueryResponseType;
+  };
+};
+
+export type GetProductFunction = (
+  context: ShopifyIntegrationContext,
+  params: GetProductProps
+) => Promise<ProductResponseType>;
+
+/**
+ * Retrieves product details by product handle.
+ * Ensures that the response includes all mandatory fields for the product and its variants.
+ * Required fields in product fragment: id, title, description, slug, priceRange, variants.
+ * Required fields in variant fragment: id, sku, title, price.
+ *
+ * @param {ShopifyIntegrationContext} context - The Shopify integration context.
+ * @param {GetProductProps} params - Parameters including product handle and product fragment.
+ * @returns {Promise<ProductResponseType>} - The product details with flattened variant data.
+ * @throws {Error} If required fields are missing in the response.
+ */
+export const getProduct: GetProductFunction = async (context, params) => {
+  const { storefrontClient } = context.client;
+
+  if (!params.productHandle) {
+    throw new Error('Product handle is required to retrieve product details');
+  }
+  if (!params.productFragment) {
+    throw new Error('Product fragment is required to shape the product data');
+  }
+
+  const productFragment = PRODUCT_DETAILS_FRAGMENT(params.productFragment);
+
+  try {
+    const response = await storefrontClient.query<GetProductQueryResponse>({
+      data: {
+        query: `${GET_PRODUCT_BY_HANDLE_QUERY}
+                ${productFragment}`,
+        variables: { productHandle: params.productHandle },
+      },
+    });
+
+    const product = response?.body?.data?.productByHandle;
+    if (!product) {
+      throw new Error('Failed to retrieve product details');
+    }
+
+    // Check for required product fields
+    const { id, title, description, slug, priceRange, variants } = product;
+    if (!id || !title || description === undefined || !slug || !variants) {
+      throw new Error('Missing required fields in product data');
+    }
+
+    // Flatten variants and check for required fields
+    const flattenedVariants = flattenVariantData(product.variants);
+
+    return {
+      ...product,
+      variants: flattenedVariants,
+    };
+  } catch (error) {
+    console.error('Error retrieving product:', error);
+    throw new Error('Failed to retrieve product. Please try again later.');
+  }
+};
+
+src/model/products.ts
+import { VariantDetails } from './types';
+
+/**
+ * Flattens the variant data from the product response.
+ * Ensures that all required fields for each variant are present.
+ *
+ * @param {any} variants - The variants object from the product GraphQL response.
+ * @returns {VariantDetails[]} - An array of flattened variant details.
+ * @throws {Error} If required fields are missing in any of the variants.
+ */
+export const flattenVariantData = (variants: {
+  edges: { node: VariantDetails }[];
+}): VariantDetails[] => {
+  return variants.edges.map((edge: any) => {
+    const { id, sku, title, price } = edge.node;
+
+    // Check for required fields
+    if (!id || sku === undefined || !title || !price) {
+      throw new Error('Missing required fields in variant data');
+    }
+
+    return {
+      ...edge.node,
+      id,
+      sku,
+      title,
+      price,
+    };
+  });
+};

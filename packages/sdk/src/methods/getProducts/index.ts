@@ -1,31 +1,67 @@
 import { client } from '../../client';
 import { getFragment } from '../../fragments';
-import { FragmentName, TODO } from '../../types';
+import { FragmentInstance, FragmentName } from '../../types';
+import { ProductResponseType } from '../../types/products';
 
 /**
- * Method summary - General information about the SDK method, usually a single sentence.
+ * Retrieves a list of products, optionally from a specific collection, with support for pagination and sorting.
  *
- * @remarks
- * In this section, we have been adding detailed information such as:
- * * what API middleware endpoint this method is calling,
- * * what SAP OCC API endpoints are being called as a result of using this method,
- * * when this method can be used and when it can’t (e.g. logged-in vs anonymous users),
- * * simply everything what helps with understanding how it works.
+ * The 'productFragment' parameter allows for customization of the product data shape, specifying the fields of the product
+ * and its variants to be included in the response from Shopify. This enables tailoring the product data structure
+ * to specific frontend requirements.
  *
- * @param props
- * Just like our API methods, our SDK connector methods accept a single props parameter which carries relevant sub-properties. Therefore, there isn’t much to be described within that TSDoc section.
+ * The method also supports pagination and sorting, allowing for efficient data retrieval based on frontend needs.
  *
- * @returns
- * Human-friendly information what the SDK methods returns.
+ * Required fields in the product fragment include:
+ * - id: Unique identifier for each product.
+ * - title: Product title.
+ * - description: Product description.
+ * - slug: SEO-friendly URL slug for the product.
+ * - variants: Variants available for the product, returned as a simplified flat array.
  *
- * @example
- * A short code snippet showing how to use the method. Usually we have more than one @example. We should strive for adding as many examples as possible here, with multiple param configurations.
+ * Required fields in each variant fragment include:
+ * - id: Unique identifier for each variant.
+ * - sku: Stock Keeping Unit for tracking inventory.
+ * - title: Title of the variant.
+ * - price: Price of the variant.
+ *
+ * @param {object} props - Properties for fetching products.
+ * @param {FragmentInstance} [props.productFragment] - Optional override for the product GraphQL fragment.
+ * @param {string} [props.collectionHandle] - Optional collection handle to fetch products from a specific collection.
+ * @param {object} [props.pagination] - Optional pagination details.
+ * @param {object} [props.sorting] - Optional sorting preferences.
+ * @returns {Promise<Array<ProductResponseType>>} Promise resolving to the list of product details.
+ * @throws {Error} If the API call fails.
  */
-export async function getProducts(props?: TODO) {
-  const productFragment = getFragment(FragmentName.product);
-  const { data } = await client.post<TODO>('getProducts', {
-    ...props,
-    productFragment,
-  });
-  return data;
-}
+export const getProducts = async (props: {
+    productFragment?: FragmentInstance;
+    collectionHandle?: string;
+    pagination?: {
+        after?: string | null;
+        first?: number;
+    };
+    sorting?: {
+        sortKey: string;
+        direction?: 'ASC' | 'DESC';
+    };
+}): Promise<Array<ProductResponseType>> => {
+    const productFragment = props.productFragment || getFragment(FragmentName.product);
+
+    try {
+        const response = await client.post<Array<ProductResponseType>>('/getProducts', {
+            productFragment,
+            collectionHandle: props.collectionHandle,
+            pagination: props.pagination,
+            sorting: props.sorting,
+        });
+
+        if (response.data) {
+            return response.data;
+        } else {
+            throw new Error('Failed to retrieve products');
+        }
+    } catch (error) {
+        console.error('Error retrieving products:', error);
+        throw new Error('Failed to retrieve products. Please try again later.');
+    }
+};
