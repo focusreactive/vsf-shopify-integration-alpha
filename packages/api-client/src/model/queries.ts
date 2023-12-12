@@ -23,34 +23,7 @@ export const CART_DETAILS_FRAGMENT = (productFragment) => `#graphql
 
 // TODO: this should be moved to frontend as default product Fragment
 export const PRODUCT_DETAILS_FRAGMENT = (productAdditionalFields) => `#graphql
-  fragment productDetails on Product {
-    id
-    title
-    slug: handle
-    description
-    images(first: 5) {
-      edges {
-        node {
-          src
-          altText
-        }
-      }
-    }
-    variants(first: 20) {
-      edges {
-        node {
-          id
-          title
-          sku
-          price {
-            amount
-            currencyCode
-          }
-        }
-      }
-    }
-    ${productAdditionalFields}
-  }
+  fragment productDetails on Product ${productAdditionalFields}
 `;
 
 // GraphQL mutation for creating a new cart

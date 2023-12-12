@@ -44,7 +44,7 @@ export const getProducts = async (props: {
         sortKey: string;
         direction?: 'ASC' | 'DESC';
     };
-}): Promise<Array<ProductResponseType>> => {
+} = {}): Promise<Array<ProductResponseType>> => {
     const productFragment = props.productFragment || getFragment(FragmentName.product);
 
     try {
@@ -62,6 +62,6 @@ export const getProducts = async (props: {
         }
     } catch (error) {
         console.error('Error retrieving products:', error);
-        throw new Error('Failed to retrieve products. Please try again later.');
+        throw new Error('Failed to retrieve products.');
     }
 };

@@ -3,6 +3,7 @@ import {
   LATEST_API_VERSION,
   Shopify,
   ShopifyRestResources,
+  RequestReturn,
 } from '@shopify/shopify-api';
 
 import { apiClientFactory } from '@vue-storefront/middleware';
@@ -20,18 +21,41 @@ const buildClient = (settings: MiddlewareConfig) => {
     ...settings.app,
   });
 
-  const storefrontClient = new shopify.clients.Storefront({
+  const client = new shopify.clients.Storefront({
     domain: settings.storeFrontClient.domain,
     storefrontAccessToken: settings.storeFrontClient.storefrontAccessToken,
     apiVersion: LATEST_API_VERSION,
   });
 
-  return { storefrontClient };
-};
+  // const storefrontClient = client;
 
-// const getSession =  (shopify: Shopify<ShopifyRestResources>) => async (req, res) => {
-//   shopify.auth()
-// };
+  async function query<T>(
+    props: Parameters<typeof client.query>[0]
+  ): Promise<RequestReturn<T>> {
+    try {
+      const result = await client.query<T>(props);
+      return result;
+    } catch (error) {
+      console.error(
+        `🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏\nError in GraphQL query:\n`,
+        // @ts-ignore
+        props.data.query
+          .split('\n')
+          .map((s, i) => `${(i + 1).toString().padStart(3, '0')} ${s}`)
+          .join('\n'),
+        '\n🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏🍏'
+      );
+      throw error;
+    }
+  }
+
+  return {
+    storefrontClient: {
+      ...client,
+      query,
+    },
+  };
+};
 
 const onCreate = (settings: MiddlewareConfig) => {
   const { storefrontClient } = buildClient(settings);
