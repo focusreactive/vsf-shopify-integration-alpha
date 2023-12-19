@@ -3,14 +3,43 @@ export const CART_DETAILS_FRAGMENT = (productFragment) => `#graphql
   fragment cartDetails on Cart {
     id
     checkoutUrl
+    cost {
+      subtotalAmount {
+        amount
+      }
+      totalTaxAmount {
+        amount
+      }
+      totalAmount {
+        amount
+      }
+    }
     lines(first: 20) {
       edges {
         node {
           id
           merchandise {
             ... on ProductVariant {
+              id
+              title
+              selectedOptions {
+                name
+                value
+              }
+              image {
+                url
+                altText
+              }
+              price {
+                amount
+                currencyCode
+              }
+              unitPrice {
+                amount
+                currencyCode
+              }
               product {
-                ${productFragment}
+                ...product
               }
             }
           }
@@ -19,6 +48,9 @@ export const CART_DETAILS_FRAGMENT = (productFragment) => `#graphql
       }
     }
   }
+
+  fragment product on Product
+  ${productFragment}
 `;
 
 // TODO: this should be moved to frontend as default product Fragment

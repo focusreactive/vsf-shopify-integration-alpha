@@ -5,6 +5,17 @@ export type CartResponseType = {
 export type CartDetails = {
   id: string;
   checkoutUrl: string;
+  cost: {
+    subtotalAmount: {
+      amount: number;
+    };
+    totalTaxAmount: {
+      amount: number;
+    };
+    totalAmount: {
+      amount: number;
+    };
+  };
   lines: {
     edges: Array<{
       node: {
@@ -19,7 +30,6 @@ export type CartDetails = {
     }>;
   };
 };
-
 
 export type FlatCartLine = {
   id: string;

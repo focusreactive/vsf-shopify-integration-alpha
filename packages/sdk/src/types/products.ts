@@ -6,6 +6,7 @@ export type VariantDetails = {
     amount: string;
     currencyCode: string;
   };
+  [key: string]: any;
 };
 
 export type ProductResponseType = {
@@ -23,5 +24,6 @@ export type ProductResponseType = {
       currencyCode: string;
     };
   };
+  [key: string]: any;
   variants: VariantDetails[]; // Simplified flat array of variants
 };
