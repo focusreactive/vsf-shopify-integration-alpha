@@ -13,7 +13,7 @@ export type ProductResponseType = {
   id: string;
   title: string;
   description: string;
-  slug: string; // SEO-friendly URL slug for the product
+  slug: string;
   priceRange: {
     minVariantPrice: {
       amount: string;
@@ -25,5 +25,10 @@ export type ProductResponseType = {
     };
   };
   [key: string]: any;
-  variants: VariantDetails[]; // Simplified flat array of variants
+  variants: VariantDetails[];
+};
+
+export type PageInfo = {
+  endCursor: string;
+  hasNextPage: boolean;
 };

@@ -1,7 +1,7 @@
 import { client } from '../../client';
 import { getFragment } from '../../fragments';
 import { FragmentInstance, FragmentName } from '../../types';
-import { ProductResponseType } from '../../types/products';
+import { PageInfo, ProductResponseType } from '../../types/products';
 
 /**
  * Retrieves a list of products, optionally from a specific collection, with support for pagination and sorting.
@@ -33,35 +33,41 @@ import { ProductResponseType } from '../../types/products';
  * @returns {Promise<Array<ProductResponseType>>} Promise resolving to the list of product details.
  * @throws {Error} If the API call fails.
  */
-export const getProducts = async (props: {
+export const getProducts = async (
+  props: {
     productFragment?: FragmentInstance;
     collectionHandle?: string;
     pagination?: {
-        after?: string | null;
-        first?: number;
+      after?: string | null;
+      first?: number;
     };
     sorting?: {
-        sortKey: string;
-        direction?: 'ASC' | 'DESC';
+      sortKey: string;
+      direction?: 'ASC' | 'DESC';
     };
-} = {}): Promise<Array<ProductResponseType>> => {
-    const productFragment = props.productFragment || getFragment(FragmentName.product);
+  } = {}
+): Promise<{ products: Array<ProductResponseType>; pageInfo: PageInfo }> => {
+  const productFragment =
+    props.productFragment || getFragment(FragmentName.product);
 
-    try {
-        const response = await client.post<Array<ProductResponseType>>('/getProducts', {
-            productFragment,
-            collectionHandle: props.collectionHandle,
-            pagination: props.pagination,
-            sorting: props.sorting,
-        });
+  try {
+    const response = await client.post<{
+      products: ProductResponseType[];
+      pageInfo: PageInfo;
+    }>('/getProducts', {
+      productFragment,
+      collectionHandle: props.collectionHandle,
+      pagination: props.pagination,
+      sorting: props.sorting,
+    });
 
-        if (response.data) {
-            return response.data;
-        } else {
-            throw new Error('Failed to retrieve products');
-        }
-    } catch (error) {
-        console.error('Error retrieving products:', error);
-        throw new Error('Failed to retrieve products.');
+    if (response.data) {
+      return response.data;
+    } else {
+      throw new Error('Failed to retrieve products');
     }
+  } catch (error) {
+    console.error('Error retrieving products:', error);
+    throw new Error('Failed to retrieve products.');
+  }
 };
