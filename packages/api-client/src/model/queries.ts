@@ -53,9 +53,14 @@ export const CART_DETAILS_FRAGMENT = (productFragment) => `#graphql
   ${productFragment}
 `;
 
-// TODO: this should be moved to frontend as default product Fragment
 export const PRODUCT_DETAILS_FRAGMENT = (productAdditionalFields) => `#graphql
   fragment productDetails on Product ${productAdditionalFields}
+`;
+
+export const COLLECTION_DETAILS_FRAGMENT = (
+  collectionAdditionalFields
+) => `#graphql
+  fragment collectionDetails on Collection ${collectionAdditionalFields}
 `;
 
 // GraphQL mutation for creating a new cart
@@ -130,6 +135,7 @@ export const GET_PRODUCT_BY_HANDLE_QUERY = `#graphql
 export const GET_PRODUCTS_FROM_COLLECTION_QUERY = `#graphql
   query GetProductsFromCollection($collectionHandle: String!, $first: Int = 24, $after: String, $sortKey: ProductCollectionSortKeys, $reverse: Boolean, $filters: [ProductFilter!]) {
     collection(handle: $collectionHandle) {
+      ...collectionDetails
       products(first: $first, after: $after, sortKey: $sortKey, reverse: $reverse, filters: $filters) {
         edges {
           node {

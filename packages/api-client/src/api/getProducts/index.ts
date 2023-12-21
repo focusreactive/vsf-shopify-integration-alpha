@@ -4,6 +4,7 @@ import {
   ProductQueryResponseType,
 } from '../../model/types';
 import {
+  COLLECTION_DETAILS_FRAGMENT,
   GET_PRODUCTS_FROM_COLLECTION_QUERY,
   GET_PRODUCTS_QUERY,
   PRODUCT_DETAILS_FRAGMENT,
@@ -12,6 +13,7 @@ import { flattenVariantData } from '../../model/products';
 
 export type GetProductsProps = {
   productFragment: FragmentInstance;
+  collectionFragment: FragmentInstance;
   collectionHandle?: string;
   pagination?: {
     after?: string | null;
@@ -43,6 +45,9 @@ type GetProductsQueryResponse = {
       pageInfo: PageInfo;
     };
     collection?: {
+      id?: string;
+      title?: string;
+      [key: string]: any;
       products: {
         edges: Array<{ node: ProductQueryResponseType }>;
         pageInfo: PageInfo;
@@ -61,8 +66,23 @@ export type GetProductsFunction = (
   params: GetProductsProps
 ) => Promise<{
   products: Array<ProductResponseType>;
+  collection?: {
+    id?: string;
+    title?: string;
+    [key: string]: any;
+  };
   pageInfo: PageInfo;
 }>;
+
+const getCollectionFields = (collection: {
+  products: any;
+  id?: string;
+  title?: string;
+  [key: string]: any;
+}) => {
+  const { products, ...collectionsFields } = collection;
+  return collectionsFields;
+};
 
 /**
  * Retrieves a list of products, optionally from a specific collection, with support for pagination and sorting.
@@ -106,6 +126,9 @@ export const getProducts: GetProductsFunction = async (context, params) => {
   }
 
   const productFragment = PRODUCT_DETAILS_FRAGMENT(params.productFragment);
+  const collectionFragment = COLLECTION_DETAILS_FRAGMENT(
+    params.collectionFragment
+  );
   const queryVariables = {
     first: params.pagination?.first || 24,
     after: params.pagination?.after || null,
@@ -115,15 +138,24 @@ export const getProducts: GetProductsFunction = async (context, params) => {
     collectionHandle: params.collectionHandle,
   };
 
-  const query = params.collectionHandle
-    ? GET_PRODUCTS_FROM_COLLECTION_QUERY
-    : GET_PRODUCTS_QUERY;
+  let query = `
+    ${GET_PRODUCTS_QUERY}
+    ${productFragment}
+  `;
+
+  if (params.collectionHandle) {
+    query = `
+    ${GET_PRODUCTS_FROM_COLLECTION_QUERY}
+    ${collectionFragment}
+    ${productFragment}
+
+  `;
+  }
 
   try {
     const response = await storefrontClient.query<GetProductsQueryResponse>({
       data: {
-        query: `${query}
-                ${productFragment}`,
+        query,
         variables: queryVariables,
       },
     });
@@ -131,6 +163,10 @@ export const getProducts: GetProductsFunction = async (context, params) => {
     const collectionData = params.collectionHandle
       ? response?.body?.data?.collection?.products
       : response?.body?.data?.products;
+
+    const collectionFields = params.collectionHandle
+      ? getCollectionFields(response?.body?.data?.collection)
+      : undefined;
 
     const productsEdges = collectionData?.edges || [];
     const pageInfo = collectionData?.pageInfo;
@@ -151,6 +187,7 @@ export const getProducts: GetProductsFunction = async (context, params) => {
 
     return {
       products,
+      collection: collectionFields,
       pageInfo: {
         hasNextPage: pageInfo?.hasNextPage || false,
         endCursor: pageInfo?.endCursor || null,

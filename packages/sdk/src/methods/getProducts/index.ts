@@ -36,6 +36,7 @@ import { PageInfo, ProductResponseType } from '../../types/products';
 export const getProducts = async (
   props: {
     productFragment?: FragmentInstance;
+    collectionFragment?: FragmentInstance;
     collectionHandle?: string;
     pagination?: {
       after?: string | null;
@@ -46,9 +47,15 @@ export const getProducts = async (
       direction?: 'ASC' | 'DESC';
     };
   } = {}
-): Promise<{ products: Array<ProductResponseType>; pageInfo: PageInfo }> => {
+): Promise<{
+  products: Array<ProductResponseType>;
+  pageInfo: PageInfo;
+  collection?: object;
+}> => {
   const productFragment =
     props.productFragment || getFragment(FragmentName.product);
+  const collectionFragment =
+    props.collectionFragment || getFragment(FragmentName.collection);
 
   try {
     const response = await client.post<{
@@ -56,6 +63,7 @@ export const getProducts = async (
       pageInfo: PageInfo;
     }>('/getProducts', {
       productFragment,
+      collectionFragment,
       collectionHandle: props.collectionHandle,
       pagination: props.pagination,
       sorting: props.sorting,
