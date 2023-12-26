@@ -7,7 +7,7 @@ Included:
   - Shopify SDK
 - Shopify Storefront SDK
 
-How to develop locally:
+### How to develop locally:
 
 ```console
 yarn
@@ -62,3 +62,17 @@ you can find the metaobject definitions in the documentation in JSON file. It co
   }
 }
 ```
+
+### Build & Run the project locally
+
+1. `yarn build` - this will build the middleware and SDK
+2. `yarn dev:middleware` - this will launch middleware locally
+3. `cd storefront/apps/web && yarn build` - this will start NextJS build and pages generation. On the build step NextJS will perform calls to Shopify through middleware
+4. `cd storefront/apps/web && yarn start` - to launch NextJS production ready app (middleware should be launched `yarn dev:middleware`)
+
+## Features
+
+Project utilize the best from SSG, SSR and client side fetching, combining this methods for providing the best performance and experience for storefront visitors.
+
+- Product pages
+

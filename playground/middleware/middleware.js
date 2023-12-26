@@ -5,7 +5,7 @@ const cors = require("cors");
 
 (async () => {
   const app = await createServer({ integrations });
-  const host = process.argv[2] ?? "0.0.0.0";
+  const host = process.argv[2] ?? "localhost";
   const port = process.argv[3] ?? 8181;
   const CORS_MIDDLEWARE_NAME = "corsMiddleware";
 
@@ -16,6 +16,8 @@ const cors = require("cors");
   corsMiddleware.handle = cors({
     origin: [
       "http://localhost:3000",
+      "https://localhost:3001",
+      "https://02cb-2405-9800-b961-1e9f-8cbf-4f44-dd2c-5620.ngrok-free.app",
       ...(process.env.MIDDLEWARE_ALLOWED_ORIGINS?.split(",") ?? []),
     ],
     credentials: true,
