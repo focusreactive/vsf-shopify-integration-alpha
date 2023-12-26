@@ -1,92 +1,64 @@
-# SDK Based Integration Boilerplate for VSF 2
+# VSF Shopify Boilerplate
 
-## Creating a new integration? 
-The fastest way to get started is to use our CLI to generate a new integration boilerplate
+Included:
 
-```bash
- npx @vue-storefront/cli create integration
-```
+- Shopify Integration:
+  - Shopify Middleware
+  - Shopify SDK
+- Shopify Storefront SDK
 
-The CLI will ask you a few questions and generate a new integration boilerplate based on your answers.
+How to develop locally:
 
-For more information about creating a custom integration using the VSF SDK, please visit the [documentation](https://docs.vuestorefront.io/integrations/custom/quick-start).
-
-From the project root, you can run the one of following commands, depending on your package manager:
-
-```bash
+```console
+yarn
 yarn dev
 ```
-or
-```bash
-npm run dev 
+
+open your in browser http://localhost:3000/
+
+start editing NextSJ app in `/storefront/apps/web` in your IDE
+
+Note: you need to setup your Shopify account and provide credentials to `playground/middleware/middleware.config.js`
+
+Additionally you have to setup some custom metaobject schemas to consume and generate landing pages
+
+To setup these metaobjects you can utilize GraphQL mutation through Admin endpoint:
+
+```GraphQL
+
+mutation ($schema: MetaobjectCreateInput!) {
+  metaobjectCreate(metaobject: $schema) {
+    metaobject {
+      id
+    }
+  }
+}
+
 ```
 
-This will do the following: 
-- start the development server for the `playground/app` application.
-- start the middleware server for the `playground/middleware` application.
+you can find the metaobject definitions in the documentation in JSON file. It contains the result of calling the following query:
 
-## Adding an endpoint
-
-```bash
-npx @vue-storefront/cli  add endpoint getSomething
+```graphql
+{
+  metaobjectDefinitions(first: 50) {
+    edges {
+      node {
+        id
+        type
+        name
+        description
+        fieldDefinitions {
+          name
+          key
+          description
+          type {
+            category
+            name
+          }
+          required
+        }
+      }
+    }
+  }
+}
 ```
-
-This will do the following:
-- add a new endpoint to the `api-client` package
-- add a new method to the `sdk` package
-- add a new route to the `playground/middleware` application
-- add a new route to the `playground/app` application
-
-
-### Using vs Contributing
-Using the CLI is the recommended way to create a new integration boilerplate. 
-However, if you're planning to contribute, you can follow the steps below.
-___
-## Would you like to contribute?
-
-This is an open-source project. Feel free to contribute by creating a new issue or submitting a pull request. 
-We highly recommend opening an issue and getting feedback *before* submitting a pull request, to avoid unnecessary work.
-
-If we feel your contribution would benefit the community, and it adheres to our standards, 
-we would be delighted to accept your pull requests.
-
-> **For internal use only.**
-> All changes are recorded in the [CHANGELOG.md](CHANGELOG.md) file.
-
-This is a new integration boilerplate for VSF 2 integrations based on the SDK.
-
-## Requirements:
-
-- NodeJS v16 or later,
-- [Yarn](https://yarnpkg.com/).
-
-## Repository structure
-
-This repository contains a few necessary packages to help you get started building your new integration:
-
-- `playground/app` - (created during CLI initialization) Demonstrates the usage of `api-client` by creating an express server app. You can use this directory to demonstrate the usage of the integration.
-- `playground/middleware` - An express app that uses the `api-client` to create a server-to-server connection with service providers (e.g. commerce backend).
-- `packages/api-client` - The service the middleware uses. It contains an `exampleEndpoint` that can be used as an example for the other API endpoints,
-- `packages/sdk`- Think of the SDK Connector as a communication layer between the storefront and the middleware. It contains an `exampleMethod` with example documentation, unit & integration tests, that can be used as an example for the rest SDK connector methods.
-- `docs` - VuePress documentation with configured API extractor, to create an API Reference based on the `api-client` and `sdk` methods & interfaces.
-
-## Getting started
-
-```bash
-yarn
-```
-
-5. Build the packages,
-
-```bash
-yarn build
-```
-
-6. Test the packages,
-
-```bash
-yarn test
-```
-
-7.  That's it. Now you can start the developing your contribution,
-8.  Enjoy.

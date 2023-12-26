@@ -12,6 +12,17 @@ type GetCartReturns = {
   id: CartDetails['id'];
   checkoutUrl: CartDetails['checkoutUrl'];
   lines: Array<FlatCartLine>;
+  cost: {
+    subtotalAmount: {
+      amount: number;
+    };
+    totalTaxAmount: {
+      amount: number;
+    };
+    totalAmount: {
+      amount: number;
+    };
+  };
 };
 
 /**
@@ -33,10 +44,14 @@ export async function getCart(props: GetCartProps): Promise<GetCartReturns> {
     throw new Error('Cart ID is required to retrieve a cart.');
   }
 
-  const productFragment = props.productFragment || getFragment(FragmentName.product);
+  const productFragment =
+    props.productFragment || getFragment(FragmentName.product);
 
   try {
-    const { data } = await client.post<GetCartReturns>('getCart', { ...props, productFragment });
+    const { data } = await client.post<GetCartReturns>('getCart', {
+      ...props,
+      productFragment,
+    });
     return data;
   } catch (error) {
     console.error('Error retrieving cart:', error);

@@ -6,10 +6,11 @@ export const customQuery: Endpoints['customQuery'] = async (
   context,
   params
 ) => {
+  const { query, variables } = params;
   const { storefrontClient } = context.client;
 
-  const response = await storefrontClient.query<{ data: { products: {}[] } }>({
-    data: params.query,
+  const response = await storefrontClient.query<{ data: object }>({
+    data: { query, variables },
   });
   const data = response?.body?.data;
 

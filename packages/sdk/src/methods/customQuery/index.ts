@@ -3,6 +3,7 @@ import { TODO } from '../../types';
 
 interface CustomQueryProps {
   query: string;
+  variables?: object;
 }
 
 /**
